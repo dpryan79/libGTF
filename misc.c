@@ -1,0 +1,94 @@
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include <pcre.h>
+#include "gtf.h"
+
+static pcre *GTFre;
+
+char *nextField(char *str) {
+    char *p = strtok(str, "\t");
+    if(p) return p;
+    p = strtok(str, "\r");
+    if(p) return p;
+    p = strtok(str, "\n");
+    return p;
+}
+
+int initGTFre() {
+    const char *errPtr = NULL;
+    int errorOffset = 0;
+    GTFre = pcre_compile("(([\\w][\\w_]*) \"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\";?)+", 0, &errPtr, &errorOffset, NULL);
+    if(!GTFre) {
+        fprintf(stderr, "[initGTFre] Error while compiling regular expression @%d\n", errorOffset);
+        fprintf(stderr, "The error was: %s\n", errPtr);
+        return 0;
+    }
+    return 1;
+}
+
+void destroyGTFre() {
+    pcre_free(GTFre);
+}
+
+static void addGeneID(GTFline *l, char *value) {
+    assert(kputs(value, &l->gene));
+}
+
+static void addTranscriptID(GTFline *l, char *value) {
+    assert(kputs(value, &l->transcript));
+}
+
+static Attribute *makeAttribute(GTFline *l, GTFtree *t, char *key, char *value) {
+    int32_t idx;
+    Attribute *a = malloc(sizeof(Attribute));
+    assert(a);
+
+    if(!strExistsHT(t->htAttributes, key)) {
+        idx = addHTelement(t->htAttributes, key);
+    } else {
+        idx = str2valHT(t->htAttributes, key);
+    }
+    a->key = idx;
+    if(!strExistsHT(t->htAttributes, value)) {
+        idx = addHTelement(t->htAttributes, value);
+    } else {
+        idx = str2valHT(t->htAttributes, value);
+    }
+    a->val = idx;
+
+    return a;
+}
+
+void addAttribute(GTFline *l, GTFtree *t, char *key, char *value) {
+    Attribute *a = makeAttribute(l, t, key, value);
+    l->attrib = realloc(l->attrib, sizeof(Attribute*)*(++l->nAttributes));
+    assert(l->attrib);
+    l->attrib[l->nAttributes-1] = a;
+}
+
+int addGTFAttributes(GTFline *l, GTFtree *t, char *str) {
+    int rc, len = strlen(str);
+    int offset = 0, ovector[12];
+    char *key, *value;
+
+    while(offset < len && (rc = pcre_exec(GTFre, NULL, str, strlen(str), offset, 0, ovector, 12))) {
+        if(rc != 4 && rc != -1) fprintf(stderr, "[addGTFAtrributes] Warning: pcre_exec returned %i\n", rc);
+        if(rc<4) break;
+        key = strndup(str + ovector[4], ovector[5]-ovector[4]);
+        assert(key);
+        value = strndup(str + ovector[6], ovector[7]-ovector[6]);
+        assert(value);
+        if(strcmp(key, "gene_id") == 0) {
+            addGeneID(l, value);
+        } else if(strcmp(key, "transcript_id") == 0) {
+            addTranscriptID(l, value);
+        } else {
+            addAttribute(l, t, key, value);
+        }
+        free(key);
+        free(value);
+        offset = ovector[2*rc-1];
+    }
+    return 1;
+}
