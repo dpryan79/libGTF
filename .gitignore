@@ -1,6 +1,10 @@
 *.dot
 *.pdf
 *.o
+*.a
+*.so
 tests/testBED
 tests/testGTF
+tests/testsFindOverlaps
+htslib
 TODO

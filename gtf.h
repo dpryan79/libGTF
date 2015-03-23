@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include "htslib/kstring.h"
+#include "version.h" //defines libGTF_VERSION
 
 /*****************
  * Strand macros *
