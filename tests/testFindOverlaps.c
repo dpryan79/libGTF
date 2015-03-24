@@ -5,11 +5,12 @@
 #include "../gtf.h"
 #include "../htslib/htslib/sam.h"
 
-void findOverlapsBAM(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int strandType) {
+void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int strandType, int minMapq) {
     bam1_t *b = bam_init1();
     overlapSet *os = os_init();
     kstring_t *ks = calloc(1, sizeof(kstring_t));
-    int32_t i;
+    int32_t i, start, end;
+    uint32_t *CIGAR, op;
     assert(b);
     assert(os);
     assert(ks);
@@ -17,19 +18,51 @@ void findOverlapsBAM(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int
     while(sam_read1(fp, hdr, b) > 0) {
         if(b->core.tid < 0) continue;
         if(b->core.flag & BAM_FUNMAP) continue;
-        os = findOverlaps(os,
+        if(b->core.qual < minMapq) continue;
+
+        //Iterate over mapped segments, finding overlaps of each mapped segment
+        start = b->core.pos;
+        end = b->core.pos-1;
+        CIGAR = bam_get_cigar(b);
+        for(i=0; i<b->core.n_cigar; i++) {
+            op = bam_cigar_op(CIGAR[i]);
+            if(bam_cigar_type(op) == 3) { //M, = or X
+                end += bam_cigar_oplen(CIGAR[i]);
+            } else if(bam_cigar_type(op) == 2) { //D or N
+                if(end >= start) {
+                    os = findOverlaps(os,
                           t,
                           hdr->target_name[b->core.tid],
-                          b->core.pos,
-                          bam_endpos(b),
+                          start,
+                          end+1,
                           (b->core.flag&16)?1:0,
                           matchType,
-                          strandType);
-        if(os->l) {
-            for(i=0; i<os->l; i++) {
-                GTFEntry2GTF(ks, t, os->overlaps[i]);
-                printf("%s overlaps %s\n", bam_get_qname(b), ks->s);
+                          strandType,
+                          1); //Note that we must run os_reset() as the end!
+                }
+                start = end + bam_cigar_oplen(CIGAR[i]) + 1;
+                end = start-1;
             }
+        }
+        if(end >= start) {
+            os = findOverlaps(os,
+                t,
+                hdr->target_name[b->core.tid],
+                start,
+                end+1,
+                (b->core.flag&16)?1:0,
+                matchType,
+                strandType,
+                1);
+        }
+        if(os->l) {
+            if(cntGeneIDs(os) == 1) {
+                printf("%s\t%s\n", bam_get_qname(b), GTFgetGeneID(t, os->overlaps[0]));
+            } else {
+                printf("%s\tAmbiguous\n", bam_get_qname(b));
+            }
+        } else {
+            printf("%s\tUnassigned_NoFeatures\n", bam_get_qname(b));
         }
         os_reset(os);
     }
@@ -44,7 +77,7 @@ void usage() {
     fprintf(stderr, "\n"
 "This program demostrates how to use libGTF to find the overlaps of each\n"
 "alignment in a BAM file. Currently, paired-end reads aren't treated in a\n"
-"particularly useful way.\n"
+"particularly useful way. It does, however, handle spliced alignments.\n"
 "\nOPTIONS\n"
 "-m STR  Match type. Possible values are 'any', 'exact', 'contain', 'within',\n"
 "        'start' and 'end'. These values are equivalent to the 'type' parameter\n"
@@ -55,19 +88,21 @@ void usage() {
 "        'exact'. 'exact' differs from 'same' in how '*' strands are handled.\n"
 "        Normally, a subject and query will overlaps if either of them has a '*'\n"
 "        strand. The 'exact' option indicates that strands must exactly match.\n"
+"-q INT  Minimum MAPQ value. Default is [0].\n"
 );
 }
 
 int main(int argc, char *argv[]) {
     int matchType = 0;
     int strandType = 0;
+    int minMapq = 0;
     char c;
     htsFile *fp = NULL;
     bam_hdr_t *hdr = NULL;
     GTFtree *t = NULL;
 
     opterr = 0; //Disable error messages
-    while((c = getopt(argc, argv, "m:s:h")) >= 0) {
+    while((c = getopt(argc, argv, "m:s:q:h")) >= 0) {
         switch(c) {
         case 'm' :
             if(strcmp(optarg, "any") == 0) matchType = 0;
@@ -88,6 +123,10 @@ int main(int argc, char *argv[]) {
         case 'h' :
             usage();
             return 0;
+            break;
+        case 'q' :
+            minMapq = atoi(optarg);
+            if(minMapq < 0) minMapq = 0;
             break;
         case '?' :
         default :
@@ -129,7 +168,7 @@ int main(int argc, char *argv[]) {
         sam_close(fp);
     }
 
-    findOverlapsBAM(t, fp, hdr, matchType, strandType);
+    findOverlapsBAM2(t, fp, hdr, matchType, strandType, minMapq);
 
     destroyGTFtree(t);
     bam_hdr_destroy(hdr);

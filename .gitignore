@@ -5,6 +5,6 @@
 *.so
 tests/testBED
 tests/testGTF
-tests/testsFindOverlaps
+tests/testFindOverlaps
 htslib
 TODO

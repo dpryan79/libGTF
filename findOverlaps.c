@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "htslib/sam.h"
 #include "gtf.h"
 
 /*******************************************************************************
@@ -122,6 +123,36 @@ static void os_sort(overlapSet *os) {
     qsort((void *) os->overlaps, os->l, sizeof(GTFentry*), os_sortFunc);
 }
 
+/*******************************************************************************
+*
+* Overlap set count/unique functions
+*
+*******************************************************************************/
+static int int32_t_cmp(const void *a, const void *b) {
+    int32_t ia = *((int32_t*) a);
+    int32_t ib = *((int32_t*) b);
+    return ia-ib;
+}
+
+int32_t cntGeneIDs(overlapSet *os) {
+    int32_t i, last, n = 0;
+    int32_t IDs[os->l];
+    if(os->l == 0) return 0;
+    if(os->l == 1) return 1;
+
+    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->gene_id;
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    n = 1;
+    for(i = 1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            n++;
+            last = IDs[i];
+        }
+    }
+    return n;
+}
 
 /*******************************************************************************
 *
@@ -306,23 +337,24 @@ static int32_t countOverlapsNode(GTFnode *n, uint32_t start, uint32_t end, int s
 * Driver functions for end use.
 *
 *******************************************************************************/
-overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType) {
+overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS) {
     int32_t tid = str2valHT(t->htChroms, chrom);
+    overlapSet *out = os;
 
-    if(os) os_reset(os);
-    else os = os_init();
+    if(out && !keepOS) os_reset(out);
+    else out = os_init();
 
-    if(tid<0) return os;
+    if(tid<0) return out;
     if(!t->balanced) {
         fprintf(stderr, "[findOverlaps] The tree has not been balanced! No overlaps will be returned.\n");
-        return os;
+        return out;
     }
 
-    pushOverlapsNode(os, (GTFnode*) t->chroms[tid]->tree, start, end, matchType);
-    if(os->l) filterStrand(os, strand, strandType);
-    if(os->l) os_sort(os);
+    pushOverlapsNode(out, (GTFnode*) t->chroms[tid]->tree, start, end, matchType);
+    if(out->l) filterStrand(out, strand, strandType);
+    if(out->l) os_sort(out);
 
-    return os;
+    return out;
 }
 
 int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType) {
@@ -347,4 +379,43 @@ int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int stran
     }
 
     return countOverlapsNode((GTFnode*) t->chroms[tid]->tree, start, end, strand, matchType, strandType, 1);
+}
+
+/*******************************************************************************
+*
+* Convenience functions for alignments
+*
+*******************************************************************************/
+overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType) {
+    int32_t i, start, end;
+    uint32_t *CIGAR, op;
+    char *chrom = NULL;
+    overlapSet *out = os;
+
+    if(out) os_reset(out);
+    else out = os_init();
+
+    if(b->core.tid < 0 || (b->core.flag & BAM_FUNMAP)) return out;
+    chrom = hdr->target_name[b->core.tid];
+
+    CIGAR = bam_get_cigar(b);
+    start = b->core.pos;
+    end = b->core.pos-1;
+    for(i=0; i<b->core.n_cigar; i++) {
+        op = bam_cigar_op(CIGAR[i]);
+        if(bam_cigar_type(op) == 3) { //M, = or X
+            end += bam_cigar_oplen(CIGAR[i]);
+        } else if(bam_cigar_type(op) == 2) { //D or N
+            if(end >= start) {
+                os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1);
+            }
+            start = end + bam_cigar_oplen(CIGAR[i]) + 1;
+            end = start-1;
+        }
+    }
+    if(end >= start) {
+        os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1);
+    }
+
+    return os;
 }

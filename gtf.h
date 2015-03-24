@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include "htslib/kstring.h"
+#include "htslib/sam.h"
 #include "version.h" //defines libGTF_VERSION
 
 /*****************
@@ -120,6 +121,7 @@ void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str);
 void GTFline_reset(GTFline *l);
 void destroyGTFline(GTFline *l);
 GTFline *initGTFline();
+char *GTFgetGeneID(GTFtree *t, GTFentry *e);
 
 //parseBED
 GTFtree *BED2Tree(char *fname);
@@ -147,9 +149,11 @@ void os_reset(overlapSet *os);
 void os_destroy(overlapSet *os);
 overlapSet *os_grow(overlapSet *os);
 void os_exclude(overlapSet *os, int i);
-overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
+overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS);
 int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
 int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
+overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType);
+int32_t cntGeneIDs(overlapSet *os);
 
 //misc.c
 char *nextField(char *str);
