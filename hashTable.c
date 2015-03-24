@@ -12,7 +12,6 @@ uint64_t hashString(char *s) {
 #if UINTPTR_MAX == 0xffffffff
     MurmurHash3_x86_128((void *) s, len, seed, (void *) &hash_val);
 #else
-    //Assuming 64bit is probably not terrible these days
     MurmurHash3_x64_128((void *) s, len, seed, (void *) &hash_val);
 #endif
     return hash_val[0];
@@ -53,7 +52,7 @@ static void rehashElement(hashTable *ht, hashTableElement *e) {
 static void rehashHT(hashTable *ht) {
     int32_t i;
     hashTableElement *e;
-    for(i=0; i<ht->m; i++) {
+    for(i=0; i<ht->l; i++) {
         if(ht->elements[i]) {
             e = ht->elements[i];
             ht->elements[i] = NULL;
@@ -70,7 +69,10 @@ static void growHT(hashTable *ht) {
     assert(ht->str);
     ht->elements = realloc(ht->elements, ht->m*sizeof(hashTableElement*));
 
-    for(i=ht->l; i<ht->m; i++) ht->str[i] = NULL;
+    for(i=ht->l; i<ht->m; i++) {
+        ht->str[i] = NULL;
+        ht->elements[i] = NULL;
+    }
     rehashHT(ht);
 }
 
@@ -119,7 +121,7 @@ int strExistsHT(hashTable *ht, char *s) {
     return 0;
 }
 
-//This will segfault if the string isn't in the hash table!
+//Returns -1 if not present
 int32_t str2valHT(hashTable *ht, char *s) {
     if(!s) return -1;
     uint64_t h = hashString(s);
@@ -128,7 +130,6 @@ int32_t str2valHT(hashTable *ht, char *s) {
         if(strcmp(ht->str[curr->val], s) == 0) return curr->val;
         curr = curr->next;
     }
-    fprintf(stderr, "%s does not exist in the hash table!\n", s);
     return -1;
 }
 

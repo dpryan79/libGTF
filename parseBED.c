@@ -128,11 +128,11 @@ void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols) {
     assert(kputc('\t', ks));
 
     //Start
-    assert(kputuw(e->start, ks));
+    assert(kputuw(e->start, ks) != EOF);
     assert(kputc('\t', ks));
 
     //End
-    assert(kputuw(e->end, ks));
+    assert(kputuw(e->end, ks) != EOF);
     if(ncols <= 3) return;
 
     //Name (in gene_id)

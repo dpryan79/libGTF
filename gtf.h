@@ -37,10 +37,7 @@ typedef struct {
  @field  frame         0: '0'; 1: '1'; 2: '2'; 3: '.'
  @field  gene_id       Index into the gene_id hash table
  @field  transcript_id Index into the transcript_id hash table
- @discussion The following fields are not yet included:
-    * score
-    * Attributes other than gene_id and transcript_id
- Positions are 0-based half open ([start, end)), like BED files.
+ @discussion Positions are 0-based half open ([start, end)), like BED files.
 */
 
 typedef struct GTFentry {

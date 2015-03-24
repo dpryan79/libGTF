@@ -87,7 +87,7 @@ void addChrom(GTFtree *t) {
 }
 
 void addGTFentry(GTFtree *t, GTFline *l) {
-    int32_t IDchrom, IDgene, IDtranscript, IDfeature;
+    int32_t IDchrom, IDgene, IDtranscript, IDfeature, IDsource;
     assert(t->balanced==0); //Should just switch to insertGTFentry(), which remains to be written
 
     //Chromosome
@@ -96,6 +96,12 @@ void addGTFentry(GTFtree *t, GTFline *l) {
         IDchrom = addHTelement(t->htChroms, l->chrom.s);
     } else {
         IDchrom = str2valHT(t->htChroms, l->chrom.s);
+    }
+    //Source
+    if(!strExistsHT(t->htSources, l->source.s)) {
+        IDsource = addHTelement(t->htSources, l->source.s);
+    } else {
+        IDsource = str2valHT(t->htSources, l->source.s);
     }
     //gene
     if(!strExistsHT(t->htGenes, l->gene.s)) {
@@ -122,15 +128,19 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     e->right = NULL;
 
     //Copy over the values
+    e->chrom = IDchrom;
     e->feature = IDfeature;
+    e->source = IDsource;
     e->start = l->start;
     e->end = l->end;
     e->strand = l->strand;
     e->frame = l->frame;
+    e->score = l->score;
     e->gene_id = IDgene;
     e->transcript_id = IDtranscript;
     e->nAttributes = l->nAttributes;
     e->attrib = l->attrib;
+    assert(l->end > l->start);
 
     if(t->chroms[IDchrom]->tree) {
         e->left = ((GTFentry*) t->chroms[IDchrom]->tree)->left;
@@ -152,6 +162,7 @@ void addGTFentry(GTFtree *t, GTFline *l) {
 *******************************************************************************/
 
 //If a list is circular to the right, it won't be afterward
+/*
 uint32_t getVineLength(GTFentry *e) {
     uint32_t l = 0;
     GTFentry *p = e;
@@ -162,6 +173,7 @@ uint32_t getVineLength(GTFentry *e) {
     }
     return l;
 }
+*/
 
 GTFentry *getMiddleR(GTFentry *e, uint32_t pos) {
     uint32_t i;
@@ -182,7 +194,9 @@ GTFentry *getMiddleL(GTFentry *e, uint32_t pos) {
     uint32_t i;
     GTFentry *tmp, *o = e;
 
-    if(!o->left) return o;
+    if(!o->left) {
+        return o;
+    }
     for(i=1; i<pos; i++) {
         assert(o->left);
         o = o->left;
@@ -284,12 +298,15 @@ GTFentry *sortTreeStart(GTFentry *e, uint32_t l) {
 
     return mergeSortStart(sortTreeStart(e,half), sortTreeStart(middle,half+(l&1)));
 }
+
 GTFentry *sortTreeEnd(GTFentry *e, uint32_t l) {
     if(l==1) {
         e->left = NULL; //The list is circular, so...
         return e;
     }
     uint32_t half = l/2;
+    assert(e->left);
+    assert(e != e->left);
     GTFentry *middle = getMiddleL(e, half);
     assert(e != middle);
     assert(e != e->left);
@@ -324,6 +341,7 @@ uint32_t getCenter(GTFentry *ends) {
     return slow->end-1;
 }
 
+/*
 GTFentry *getRStarts(GTFentry *starts, uint32_t pos) {
     GTFentry *o, *tmp;
     if(!starts->right) return NULL;
@@ -354,16 +372,18 @@ GTFentry *getLEnds(GTFentry *ends, uint32_t pos) {
     }
     return NULL;
 }
+*/
 
-GTFentry *getMembers(GTFentry **members, GTFentry *starts, uint32_t pos) {
-    GTFentry *tmp, *newStarts = NULL, *last = NULL, *lastMember = NULL;
+GTFentry *getMembers(GTFentry **members, GTFentry **rStarts, GTFentry *starts, uint32_t pos) {
+    GTFentry *tmp, *newStarts = NULL;
+    GTFentry *last = NULL, *lastMember = NULL;
 
-    *members = NULL;
+    *members = NULL, *rStarts = NULL;
 
-    while(starts) {
+    while(starts && starts->start <= pos) {
         if(starts->end > pos) {
             tmp = starts->right;
-            if(!lastMember) {
+            if(!*members) {
                 lastMember = starts;
                 *members = starts;
             } else {
@@ -383,11 +403,48 @@ GTFentry *getMembers(GTFentry **members, GTFentry *starts, uint32_t pos) {
             starts = starts->right;
         }
     }
+    *rStarts = starts;
     if(lastMember) lastMember->right = NULL;
     if(last) last->right = NULL;
+    assert(*members);
     return newStarts;
 }
+GTFentry *getRMembers(GTFentry **members, GTFentry **lEnds, GTFentry *ends, uint32_t pos) {
+    GTFentry *tmp, *newEnds = NULL;
+    GTFentry *last = NULL, *lastMember = NULL;
 
+    *members = NULL, *lEnds = NULL;
+
+    while(ends && ends->end > pos) {
+        tmp = ends->left;
+        if(ends->start <= pos) {
+            if(!*members) {
+                *members = ends;
+                lastMember = ends;
+            } else {
+                lastMember->left = ends;
+                lastMember = ends;
+            }
+        } else {
+            if(!newEnds) {
+                newEnds = ends;
+                last = ends;
+            } else {
+                last->left = ends;
+                last = ends;
+            }
+        }
+        ends->left = NULL;
+        ends = tmp;
+    }
+    *lEnds = ends;
+    assert(*members);
+    lastMember->left = NULL;
+    if(newEnds) last->left = NULL;
+    return newEnds;
+}
+
+/*
 GTFentry *removeMembers(GTFentry *ends, uint32_t pos) {
     GTFentry *newEnds = NULL, *lastEnd = NULL;
     GTFentry *members = NULL, *lastMember = NULL;
@@ -418,26 +475,44 @@ GTFentry *removeMembers(GTFentry *ends, uint32_t pos) {
     return newEnds;
 }
 
+static GTFentry *fixEnds(GTFentry *starts) {
+    GTFentry *curr = starts->right;
+    GTFentry *prev = starts;
+    while(curr) {
+        curr->left = prev;
+        prev = curr;
+        curr = curr->right;
+    }
+    starts->left = NULL;
+    if(curr) return curr;
+    return prev;
+}
+*/
+
 GTFnode *makeIntervalTree(GTFentry *starts, GTFentry *ends) {
-    uint32_t center = getCenter(ends), nMembers;
-    GTFentry *rStarts = getRStarts(starts, center);
-    GTFentry *lEnds = getLEnds(ends, center);
+    uint32_t center = getCenter(ends);//, nMembers;
+    GTFentry *rStarts = NULL; //getRStarts(starts, center);
+    GTFentry *lEnds = NULL; //getLEnds(ends, center);
     GTFentry *memberStarts = NULL, *memberEnds = NULL;
     GTFnode *out = calloc(1, sizeof(GTFnode));
     assert(out);
 
-    starts = getMembers(&memberStarts, starts, center);
-    ends = removeMembers(ends, center);
-    nMembers = getVineLength(memberStarts);
-    if(nMembers) memberEnds = sortTreeEnd(memberStarts, nMembers);
+    starts = getMembers(&memberStarts, &rStarts, starts, center);
+    ends = getRMembers(&memberEnds, &lEnds, ends, center);
 
     out->center = center;
     out->starts = memberStarts;
     out->ends = memberEnds;
-    if(lEnds) out->left = makeIntervalTree(starts, lEnds);
-    else out->left = NULL;
-    if(rStarts) out->right = makeIntervalTree(rStarts, ends);
-    else out->right = NULL;
+    if(lEnds && starts) {
+        out->left = makeIntervalTree(starts, lEnds);
+    } else {
+        out->left = NULL;
+    }
+    if(rStarts && ends) {
+        out->right = makeIntervalTree(rStarts, ends);
+    } else {
+        out->right = NULL;
+    }
 
     return out;
 }
@@ -549,10 +624,9 @@ void printBalancedGTF(GTFnode *n, const char *chrom) {
 }
 
 void printGTFvineR(GTFentry *e, const char* chrom) {
-    if(!e->left) return;
     if(e->left == e) return;
     printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\" [color=red];\n", chrom, e->start, e->end, chrom, e->left->start, e->left->end);
-//printf("\t%p <- %p -> %p\n", e->left, e, e->right);
+    if(!e->left) return;
     printGTFvineR(e->left, chrom);
 }
 void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str) {
@@ -561,9 +635,8 @@ void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str) {
 }
 
 void printGTFvine(GTFentry *e, const char* chrom) {
-    if(!e->right) return;
     printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\";\n", chrom, e->start, e->end, chrom, e->right->start, e->right->end);
-//printf("\t%p <- %p -> %p\n", e->left, e, e->right);
+    if(!e->right) return;
     printGTFvine(e->right, chrom);
 }
 void printGTFvineStart(GTFentry *e, const char *chrom, const char *str) {

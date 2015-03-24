@@ -31,7 +31,7 @@ GTFline * parseGTFline(GTFline *o, GTFtree *t, kstring_t ks) {
     //Start
     p = nextField(NULL);
     if(!p) goto err;
-    o->start = strtoull(p, &end, 10);
+    o->start = strtoull(p, &end, 10)-1;
     if(*end) goto err;
 
     //End
@@ -127,11 +127,11 @@ void GTFEntry2GTF(kstring_t *ks, GTFtree *t, GTFentry *e) {
     assert(kputc('\t', ks));
 
     //Start
-    assert(kputw(e->start+1, ks));
+    assert(kputw(e->start+1, ks) != EOF);
     assert(kputc('\t', ks));
 
     //End
-    assert(kputw(e->end, ks));
+    assert(kputw(e->end, ks) != EOF);
     assert(kputc('\t', ks));
 
     //Score
