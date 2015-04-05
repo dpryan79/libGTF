@@ -69,9 +69,10 @@ static inline int oppositeStrand(int strand, GTFentry *e) {
 * OverlapSet functions
 *
 *******************************************************************************/
-overlapSet *os_init() {
+overlapSet *os_init(GTFtree *t) {
     overlapSet *os = calloc(1, sizeof(overlapSet));
     assert(os);
+    os->tree = t;
     return os;
 }
 
@@ -125,6 +126,45 @@ static void os_sort(overlapSet *os) {
 
 /*******************************************************************************
 *
+* uniqueSet functions
+*
+*******************************************************************************/
+static uniqueSet *us_init(hashTable *ht) {
+    uniqueSet *us = calloc(1, sizeof(uniqueSet));
+    assert(us);
+    us->ht = ht;
+    return us;
+}
+
+void us_destroy(uniqueSet *us) {
+    if(!us) return;
+    if(us->IDs) free(us->IDs);
+    free(us);
+}
+
+static uniqueSet *us_grow(uniqueSet *us) {
+    int i;
+    us->m++;
+    kroundup32(us->m);
+    us->IDs = realloc(us->IDs, us->m * sizeof(int32_t));
+    assert(us->IDs);
+    for(i=us->l; i<us->m; i++) us->IDs[i] = -1;
+
+    return us;
+}
+
+static void us_push(uniqueSet *us, int32_t ID) {
+    if(us->l+1 >= us->m) us = us_grow(us);
+    us->IDs[us->l++] = ID;
+}
+
+char *us_val(uniqueSet *us, int32_t i) {
+    if(i>=us->l) return NULL;
+    return val2strHT(us->ht, us->IDs[i]);
+}
+
+/*******************************************************************************
+*
 * Overlap set count/unique functions
 *
 *******************************************************************************/
@@ -152,6 +192,131 @@ int32_t cntGeneIDs(overlapSet *os) {
         }
     }
     return n;
+}
+
+int32_t cntTranscriptIDs(overlapSet *os) {
+    int32_t i, last, n = 0;
+    int32_t IDs[os->l];
+    if(os->l == 0) return 0;
+    if(os->l == 1) return 1;
+
+    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->transcript_id;
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    n = 1;
+    for(i = 1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            n++;
+            last = IDs[i];
+        }
+    }
+    return n;
+}
+
+int32_t cntAttributes(overlapSet *os, char *attributeName) {
+    int32_t IDs[os->l], i, j, key, last, n = 0;
+    if(!strExistsHT(os->tree->htAttributes, attributeName)) return n;
+
+    key = str2valHT(os->tree->htAttributes, attributeName);
+    for(i=0; i<os->l; i++) {
+        IDs[i] = -1;
+        for(j=0; j<os->overlaps[i]->nAttributes; j++) {
+            if(os->overlaps[i]->attrib[j]->key == key) {
+                IDs[i] = os->overlaps[i]->attrib[j]->val;
+                break;
+            }
+        }
+    }
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    n = (last >= 0) ? 1 : 0;
+    for(i = 1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            n++;
+            last = IDs[i];
+        }
+    }
+    return n;
+}
+
+uniqueSet *uniqueGeneIDs(overlapSet *os) {
+    if(os->l == 0) return NULL;
+    int32_t i, last;
+    int32_t IDs[os->l];
+    uniqueSet *us = us_init(os->tree->htGenes);
+
+    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->gene_id;
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    if(IDs[0] >= 0) us_push(us, last);
+    for(i=1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            us_push(us, IDs[i]);
+            last = IDs[i];
+        }
+    }
+
+    if(us->l) return us;
+    us_destroy(us);
+    return NULL;
+}
+
+uniqueSet *uniqueTranscriptIDs(overlapSet *os) {
+    if(os->l == 0) return NULL;
+    int32_t i, last;
+    int32_t IDs[os->l];
+    uniqueSet *us = us_init(os->tree->htTranscripts);
+
+    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->transcript_id;
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    if(IDs[0] >= 0) us_push(us, last);
+    for(i=1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            us_push(us, IDs[i]);
+            last = IDs[i];
+        }
+    }
+
+    if(us->l) return us;
+    us_destroy(us);
+    return NULL;
+}
+
+uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
+    if(os->l == 0) return NULL;
+    int32_t IDs[os->l], i, j, key, last;
+    if(!strExistsHT(os->tree->htAttributes, attributeName)) return NULL;
+    uniqueSet *us = us_init(os->tree->htAttributes);
+
+    key = str2valHT(os->tree->htAttributes, attributeName);
+    for(i=0; i<os->l; i++) {
+        IDs[i] = -1;
+        for(j=0; j<os->overlaps[i]->nAttributes; j++) {
+            if(os->overlaps[i]->attrib[j]->key == key) {
+                IDs[i] = os->overlaps[i]->attrib[j]->val;
+                break;
+            }
+        }
+    }
+    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
+
+    last = IDs[0];
+    if(IDs[0] >= 0) us_push(us, last);
+    for(i=1; i<os->l; i++) {
+        if(IDs[i] != last) {
+            us_push(us, IDs[i]);
+            last = IDs[i];
+        }
+    }
+
+    if(us->l) return us;
+    us_destroy(us);
+    return NULL;
 }
 
 /*******************************************************************************
@@ -342,7 +507,7 @@ overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t star
     overlapSet *out = os;
 
     if(out && !keepOS) os_reset(out);
-    else out = os_init();
+    else out = os_init(t);
 
     if(tid<0) return out;
     if(!t->balanced) {
@@ -393,7 +558,7 @@ overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hd
     overlapSet *out = os;
 
     if(out) os_reset(out);
-    else out = os_init();
+    else out = os_init(t);
 
     if(b->core.tid < 0 || (b->core.flag & BAM_FUNMAP)) return out;
     chrom = hdr->target_name[b->core.tid];

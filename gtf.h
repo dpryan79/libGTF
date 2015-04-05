@@ -108,7 +108,14 @@ typedef struct {
 typedef struct {
     int32_t l, m;
     GTFentry **overlaps;
+    GTFtree *tree;
 } overlapSet;
+
+typedef struct {
+    int32_t l, m;
+    int32_t *IDs;
+    hashTable *ht;
+} uniqueSet;
 
 //gtf.c
 GTFtree * initGTFtree();
@@ -144,16 +151,23 @@ int hasAttribute(GTFtree *t, GTFentry *e, char *str);
 char *getAttribute(GTFtree *t, GTFentry *e, char *str); //NULL if the attribute isn't there
 
 //findOverlaps.c
-overlapSet *os_init();
+overlapSet *os_init(GTFtree *t);
 void os_reset(overlapSet *os);
 void os_destroy(overlapSet *os);
 overlapSet *os_grow(overlapSet *os);
 void os_exclude(overlapSet *os, int i);
+void us_destroy(uniqueSet *us);
+char *us_val(uniqueSet *us, int32_t i);
 overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS);
 int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
 int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
 overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType);
 int32_t cntGeneIDs(overlapSet *os);
+int32_t cntTranscriptIDs(overlapSet *os);
+int32_t cntAttributes(overlapSet *os, char *attributeName); //N.B., if a record lacks an attribute, it's ignored
+uniqueSet *uniqueGeneIDs(overlapSet *os);
+uniqueSet *uniqueTranscriptIDs(overlapSet *os);
+uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName);
 
 //misc.c
 char *nextField(char *str);

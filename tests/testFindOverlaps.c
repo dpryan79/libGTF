@@ -7,7 +7,7 @@
 
 void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int strandType, int minMapq) {
     bam1_t *b = bam_init1();
-    overlapSet *os = os_init();
+    overlapSet *os = os_init(t);
     kstring_t *ks = calloc(1, sizeof(kstring_t));
     int32_t i, start, end;
     uint32_t *CIGAR, op;

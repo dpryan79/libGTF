@@ -7,6 +7,14 @@ In essense, this library construct an interval tree representation of GTF or BED
 
 Note that murmur3.c and murmur3.h are C implementations of MurmurHash. The C implementation is from [Peter Scott](https://github.com/PeterScott/murmur3) and MurmurHash itself is by [Austin Appleby](https://code.google.com/p/smhasher/wiki/MurmurHash3). Both of these are in the public domain.
 
+Installation
+============
+
+    git clone https://github.com/dpryan79/libGTF.git
+    git submodule init
+    git submodule update
+    make
+
 Examples
 ========
 
@@ -20,20 +28,20 @@ To Do
 =====
 
  - [X] cntGeneIDs()
- - [ ] findOverlaps, but only if feature is XXX or not YYY (allow lists)
- - [ ] uniqueGeneIDs()
- - [ ] cntTranscriptIDs()
- - [ ] uniqueTranscriptIDs()
- - [ ] cntAttributes()
- - [ ] uniqueAttributes()
+ - [X] uniqueGeneIDs()
+ - [X] cntTranscriptIDs()
+ - [X] uniqueTranscriptIDs()
+ - [X] cntAttributes()
+ - [X] uniqueAttributes()
  - [ ] test various overlap options
    - [X] findOverlaps
    - [ ] countOverlaps
    - [ ] overlapsAny
- - [ ] test strandedness with above
- - [ ] test match type options with above
- - [ ] compare with featureCounts/bedtools and ensure the results are the same
+   - [ ] test strandedness with above
+   - [ ] test match type options with above
+ - [ ] intersect/union/diff on overlapSets
+ - [ ] findOverlaps, but only if feature is XXX or not YYY (allow lists)
  - [ ] add a findClosest() function
+ - [ ] compare with featureCounts/bedtools and ensure the results are the same
  - [ ] parseGFF?
  - [ ] test for GFF?
- - [ ] intersect/union/diff on overlapSets
