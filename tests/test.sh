@@ -1,3 +1,4 @@
+#!/bin/bash
 nfail=0
 check() {
     out=`diff $1 $2`
