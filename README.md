@@ -39,9 +39,11 @@ To Do
    - [ ] overlapsAny
    - [ ] test strandedness with above
    - [ ] test match type options with above
+ - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
  - [ ] intersect/union/diff on overlapSets
  - [ ] findOverlaps, but only if feature is XXX or not YYY (allow lists)
  - [ ] add a findClosest() function
  - [ ] compare with featureCounts/bedtools and ensure the results are the same
  - [ ] parseGFF?
  - [ ] test for GFF?
+ - [ ] Run valgrind with all tests to ensure no memory leaks

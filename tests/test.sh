@@ -53,8 +53,8 @@ echo -e "A	ENSMUSG00000094121
 B	ENSMUSG00000094121
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
-E	ENSMUSG00000094121
-F	ENSMUSG00000094121
+E	Unassigned_NoFeatures
+F	Unassigned_NoFeatures
 G	ENSMUSG00000094121
 H	ENSMUSG00000094121
 I	Unassigned_NoFeatures
@@ -168,7 +168,7 @@ B	ENSMUSG00000094121
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
 E	Unassigned_NoFeatures
-F	ENSMUSG00000094121
+F	Unassigned_NoFeatures
 G	Unassigned_NoFeatures
 H	ENSMUSG00000094121
 I	Unassigned_NoFeatures
@@ -281,7 +281,7 @@ echo -e "A	ENSMUSG00000094121
 B	Unassigned_NoFeatures
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
-E	ENSMUSG00000094121
+E	Unassigned_NoFeatures
 F	Unassigned_NoFeatures
 G	ENSMUSG00000094121
 H	Unassigned_NoFeatures

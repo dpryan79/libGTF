@@ -124,6 +124,70 @@ static void os_sort(overlapSet *os) {
     qsort((void *) os->overlaps, os->l, sizeof(GTFentry*), os_sortFunc);
 }
 
+//Non-existant keys/values will be ignored
+void os_requireAttributes(overlapSet *os, char **key, char **val, int len) {
+    int i, j, k, filter;
+    int32_t keyHash, valHash;
+
+    for(i=0; i<len; i++) {
+        if(!os->l) break;
+
+        keyHash = str2valHT(os->tree->htAttributes, key[i]);
+        valHash = str2valHT(os->tree->htAttributes, val[i]);
+        assert(keyHash>=0);
+        assert(valHash>=0);
+        for(j=0; j<os->l; j++) {
+            filter = 1;
+            for(k=0; k<os->overlaps[j]->nAttributes; k++) {
+                if(os->overlaps[j]->attrib[k]->key == keyHash) {
+                    if(os->overlaps[j]->attrib[k]->val == valHash) {
+                        filter = 0;
+                        break;
+                    }
+                }
+            }
+            if(filter) {
+                os_exclude(os, j);
+                j--; //os_exclude shifts everything
+            }
+        }
+    }
+}
+
+void os_requireSource(overlapSet *os, char *val) {
+    int i;
+    int32_t valHash;
+
+    if(!os->l) return;
+
+    valHash = str2valHT(os->tree->htSources, val);
+    assert(valHash>=0);
+
+    for(i=0; i<os->l; i++) {
+        if(os->overlaps[i]->source != valHash) {
+            os_exclude(os, i);
+            i--;
+        }
+    }
+}
+
+void os_requireFeature(overlapSet *os, char *val) {
+    int i;
+    int32_t valHash;
+
+    if(!os->l) return;
+
+    valHash = str2valHT(os->tree->htFeatures, val);
+    assert(valHash>=0);
+
+    for(i=0; i<os->l; i++) {
+        if(os->overlaps[i]->feature != valHash) {
+            os_exclude(os, i);
+            i--;
+        }
+    }
+}
+
 /*******************************************************************************
 *
 * uniqueSet functions

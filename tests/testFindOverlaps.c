@@ -55,6 +55,10 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
                 strandType,
                 1);
         }
+
+        //We only care about exons...
+        os_requireFeature(os, "exon");
+
         if(os->l) {
             if(cntGeneIDs(os) == 1) {
                 printf("%s\t%s\n", bam_get_qname(b), GTFgetGeneID(t, os->overlaps[0]));

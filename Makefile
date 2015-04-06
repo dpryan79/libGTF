@@ -4,7 +4,7 @@ AR = ar
 RANLIB = ranlib
 OPTS = -Wall -g
 
-.PHONY: all clean htslib install clean-all
+.PHONY: all clean htslib install clean-all check
 
 .SUFFIXES:.c .o
 
@@ -41,6 +41,9 @@ tests/testGTF: lib
 
 tests/testFindOverlaps: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testFindOverlaps tests/testFindOverlaps.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
+
+check: tests/testFindOverlaps
+	cd tests && ./test.sh && cd ..
 
 clean:
 	rm -f *.o *.a tests/testBED tests/testGTF tests/testFindOverlaps
