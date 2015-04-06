@@ -37,8 +37,8 @@ To Do
    - [X] findOverlaps
    - [X] countOverlaps
    - [ ] overlapsAny
-   - [ ] test strandedness with above
-   - [ ] test match type options with above
+   - [X] test strandedness with above
+   - [X] test match type options with above
  - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
  - [ ] intersect/union/diff on overlapSets
  - [ ] findOverlaps, but only if feature is XXX or not YYY (allow lists)
