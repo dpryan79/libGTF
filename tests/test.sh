@@ -1,9 +1,12 @@
+nfail=0
 check() {
-    if diff $1 $2
+    out=`diff $1 $2`
+    if [ ${#out} -eq 0 ]
     then
         echo pass
     else
         echo fail
+        ((nfail++))
     fi
 }
 
@@ -348,3 +351,347 @@ K	Unassigned_NoFeatures" > correct
 ./testFindOverlaps -m end -s opposite test.gtf test.sam > seen
 check seen correct
 rm seen correct
+
+#########################################
+#Test 19 testCountOverlaps -m any -s ignore
+#########################################
+echo -n "testCountOverlaps -m any -s ignore ... "
+echo -e "A	3
+B	3
+C	2
+D	2
+E	3
+F	3
+G	3
+H	3
+I	2
+J	2
+K	4" > correct
+./testCountOverlaps -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 20 testCountOverlaps -m exact -s ignore
+#########################################
+echo -n "testCountOverlaps -m exact -s ignore ... "
+echo -e "A	2
+B	2
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m exact -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 21 testCountOverlaps -m contain -s ignore
+#########################################
+echo -n "testCountOverlaps -m contain -s ignore ... "
+echo -e "A	3
+B	3
+C	0
+D	0
+E	1
+F	1
+G	3
+H	3
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m contain -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 22 testCountOverlaps -m within -s ignore
+#########################################
+echo -n "testCountOverlaps -m within -s ignore ... "
+echo -e "A	2
+B	2
+C	2
+D	2
+E	2
+F	2
+G	0
+H	0
+I	2
+J	2
+K	4" > correct
+./testCountOverlaps -m within -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 23 testCountOverlaps -m start -s ignore
+#########################################
+echo -n "testCountOverlaps -m start -s ignore ... "
+echo -e "A	2
+B	2
+C	2
+D	2
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	2" > correct
+./testCountOverlaps -m start -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 24 testCountOverlaps -m end -s ignore
+#########################################
+echo -n "testCountOverlaps -m end -s ignore ... "
+echo -e "A	3
+B	3
+C	0
+D	0
+E	3
+F	3
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m end -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 25 testCountOverlaps -m any -s same
+#########################################
+echo -n "testCountOverlaps -m any -s same ... "
+echo -e "A	0
+B	3
+C	0
+D	2
+E	0
+F	3
+G	0
+H	3
+I	0
+J	2
+K	0" > correct
+./testCountOverlaps -m any -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 26 testCountOverlaps -m exact -s same
+#########################################
+echo -n "testCountOverlaps -m exact -s same ... "
+echo -e "A	0
+B	2
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m exact -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 27 testCountOverlaps -m contain -s same
+#########################################
+echo -n "testCountOverlaps -m contain -s same ... "
+echo -e "A	0
+B	3
+C	0
+D	0
+E	0
+F	1
+G	0
+H	3
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m contain -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 28 testCountOverlaps -m within -s same
+#########################################
+echo -n "testCountOverlaps -m within -s same ... "
+echo -e "A	0
+B	2
+C	0
+D	2
+E	0
+F	2
+G	0
+H	0
+I	0
+J	2
+K	0" > correct
+./testCountOverlaps -m within -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 29 testCountOverlaps -m start -s same
+#########################################
+echo -n "testCountOverlaps -m start -s same ... "
+echo -e "A	0
+B	2
+C	0
+D	2
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m start -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 30 testCountOverlaps -m end -s same
+#########################################
+echo -n "testCountOverlaps -m end -s same ... "
+echo -e "A	0
+B	3
+C	0
+D	0
+E	0
+F	3
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m end -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 31 testCountOverlaps -m any -s opposite
+#########################################
+echo -n "testCountOverlaps -m any -s opposite ... "
+echo -e "A	3
+B	0
+C	2
+D	0
+E	3
+F	0
+G	3
+H	0
+I	2
+J	0
+K	4" > correct
+./testCountOverlaps -m any -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 32 testCountOverlaps -m exact -s opposite
+#########################################
+echo -n "testCountOverlaps -m exact -s opposite ... "
+echo -e "A	2
+B	0
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m exact -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 33 testCountOverlaps -m contain -s opposite
+#########################################
+echo -n "testCountOverlaps -m contain -s opposite ... "
+echo -e "A	3
+B	0
+C	0
+D	0
+E	1
+F	0
+G	3
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m contain -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 34 testCountOverlaps -m within -s opposite
+#########################################
+echo -n "testCountOverlaps -m within -s opposite ... "
+echo -e "A	2
+B	0
+C	2
+D	0
+E	2
+F	0
+G	0
+H	0
+I	2
+J	0
+K	4" > correct
+./testCountOverlaps -m within -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 35 testCountOverlaps -m start -s opposite
+#########################################
+echo -n "testCountOverlaps -m start -s opposite ... "
+echo -e "A	2
+B	0
+C	2
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	2" > correct
+./testCountOverlaps -m start -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 36 testCountOverlaps -m end -s opposite
+#########################################
+echo -n "testCountOverlaps -m end -s opposite ... "
+echo -e "A	3
+B	0
+C	0
+D	0
+E	3
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -m end -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+exit $nfail

@@ -35,7 +35,7 @@ To Do
  - [X] uniqueAttributes()
  - [ ] test various overlap options
    - [X] findOverlaps
-   - [ ] countOverlaps
+   - [X] countOverlaps
    - [ ] overlapsAny
    - [ ] test strandedness with above
    - [ ] test match type options with above

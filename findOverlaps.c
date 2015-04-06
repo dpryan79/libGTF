@@ -514,7 +514,7 @@ static int32_t countOverlapsEntry(GTFentry *e, uint32_t start, uint32_t end, int
         if(!matchingStrand(e, strand, strandType)) cnt = 0;
     }
 
-    if(cnt >= max) return max;
+    if(max && cnt >= max) return max;
 
     if(direction) {
         if(dir > 0) return cnt;

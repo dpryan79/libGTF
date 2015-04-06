@@ -8,7 +8,7 @@ OPTS = -Wall -g
 
 .SUFFIXES:.c .o
 
-all: lib tests/testBED tests/testGTF tests/testFindOverlaps
+all: lib tests/testBED tests/testGTF tests/testFindOverlaps tests/testCountOverlaps
 
 OBJS = murmur3.o hashTable.o gtf.o findOverlaps.o misc.o parseBED.o parseGTF.o
 VERSION = 0.0.0
@@ -41,6 +41,9 @@ tests/testGTF: lib
 
 tests/testFindOverlaps: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testFindOverlaps tests/testFindOverlaps.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
+
+tests/testCountOverlaps: lib
+	$(CC) $(OPTS) -Ihtslib -o tests/testCountOverlaps tests/testCountOverlaps.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
 
 check: tests/testFindOverlaps
 	cd tests && ./test.sh && cd ..
