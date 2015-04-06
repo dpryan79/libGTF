@@ -15,7 +15,7 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
     assert(os);
     assert(ks);
 
-    while(sam_read1(fp, hdr, b) > 0) {
+    while(sam_read1(fp, hdr, b) >= 0) {
         if(b->core.tid < 0) continue;
         if(b->core.flag & BAM_FUNMAP) continue;
         if(b->core.qual < minMapq) continue;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
     sortGTF(t);
 
     //Open the BAM file
-    fp = sam_open(argv[optind+1], "rb");
+    fp = sam_open(argv[optind+1], "r");
     if(!fp) {
         fprintf(stderr, "Couldn't open %s for reading!\n", argv[optind+1]);
         destroyGTFtree(t);

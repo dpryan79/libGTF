@@ -507,7 +507,7 @@ overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t star
     overlapSet *out = os;
 
     if(out && !keepOS) os_reset(out);
-    else out = os_init(t);
+    else if(!out) out = os_init(t);
 
     if(tid<0) return out;
     if(!t->balanced) {
