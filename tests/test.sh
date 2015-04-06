@@ -695,4 +695,346 @@ K	0" > correct
 check seen correct
 rm seen correct
 
+#########################################
+#Test 37 testOverlapsAny -m any -s ignore
+#########################################
+echo -n "testOverlapsAny -m any -s ignore ... "
+echo -e "A	1
+B	1
+C	1
+D	1
+E	1
+F	1
+G	1
+H	1
+I	1
+J	1
+K	1" > correct
+./testOverlapsAny -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 38 testOverlapsAny -m exact -s ignore
+#########################################
+echo -n "testOverlapsAny -m exact -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m exact -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 39 testOverlapsAny -m contain -s ignore
+#########################################
+echo -n "testOverlapsAny -m contain -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	1
+F	1
+G	1
+H	1
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m contain -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 40 testOverlapsAny -m within -s ignore
+#########################################
+echo -n "testOverlapsAny -m within -s ignore ... "
+echo -e "A	1
+B	1
+C	1
+D	1
+E	1
+F	1
+G	0
+H	0
+I	1
+J	1
+K	1" > correct
+./testOverlapsAny -m within -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 41 testOverlapsAny -m start -s ignore
+#########################################
+echo -n "testOverlapsAny -m start -s ignore ... "
+echo -e "A	1
+B	1
+C	1
+D	1
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	1" > correct
+./testOverlapsAny -m start -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 42 testOverlapsAny -m end -s ignore
+#########################################
+echo -n "testOverlapsAny -m end -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	1
+F	1
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m end -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 43 testOverlapsAny -m any -s same
+#########################################
+echo -n "testOverlapsAny -m any -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	1
+E	0
+F	1
+G	0
+H	1
+I	0
+J	1
+K	0" > correct
+./testOverlapsAny -m any -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 44 testOverlapsAny -m exact -s same
+#########################################
+echo -n "testOverlapsAny -m exact -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m exact -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 45 testOverlapsAny -m contain -s same
+#########################################
+echo -n "testOverlapsAny -m contain -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	0
+E	0
+F	1
+G	0
+H	1
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m contain -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 46 testOverlapsAny -m within -s same
+#########################################
+echo -n "testOverlapsAny -m within -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	1
+E	0
+F	1
+G	0
+H	0
+I	0
+J	1
+K	0" > correct
+./testOverlapsAny -m within -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 47 testOverlapsAny -m start -s same
+#########################################
+echo -n "testOverlapsAny -m start -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	1
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m start -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 48 testOverlapsAny -m end -s same
+#########################################
+echo -n "testOverlapsAny -m end -s same ... "
+echo -e "A	0
+B	1
+C	0
+D	0
+E	0
+F	1
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m end -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 49 testOverlapsAny -m any -s opposite
+#########################################
+echo -n "testOverlapsAny -m any -s opposite ... "
+echo -e "A	1
+B	0
+C	1
+D	0
+E	1
+F	0
+G	1
+H	0
+I	1
+J	0
+K	1" > correct
+./testOverlapsAny -m any -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 50 testOverlapsAny -m exact -s opposite
+#########################################
+echo -n "testOverlapsAny -m exact -s opposite ... "
+echo -e "A	1
+B	0
+C	0
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m exact -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 51 testOverlapsAny -m contain -s opposite
+#########################################
+echo -n "testOverlapsAny -m contain -s opposite ... "
+echo -e "A	1
+B	0
+C	0
+D	0
+E	1
+F	0
+G	1
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m contain -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 52 testOverlapsAny -m within -s opposite
+#########################################
+echo -n "testOverlapsAny -m within -s opposite ... "
+echo -e "A	1
+B	0
+C	1
+D	0
+E	1
+F	0
+G	0
+H	0
+I	1
+J	0
+K	1" > correct
+./testOverlapsAny -m within -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 53 testOverlapsAny -m start -s opposite
+#########################################
+echo -n "testOverlapsAny -m start -s opposite ... "
+echo -e "A	1
+B	0
+C	1
+D	0
+E	0
+F	0
+G	0
+H	0
+I	0
+J	0
+K	1" > correct
+./testOverlapsAny -m start -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 54 testOverlapsAny -m end -s opposite
+#########################################
+echo -n "testOverlapsAny -m end -s opposite ... "
+echo -e "A	1
+B	0
+C	0
+D	0
+E	1
+F	0
+G	0
+H	0
+I	0
+J	0
+K	0" > correct
+./testOverlapsAny -m end -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
 exit $nfail

@@ -23,6 +23,8 @@ There are currently a few example programs in the `tests/` directory.
   * `testBED` demonstrates how to parse a BED file and display its tree representation in dot format.
   * `testGTF` is the equivalent program for GTF files.
   * `testFindOverlaps` demonstrates how to find overlaps of alignments in SAM/BAM/CRAM format with a GTF file. This is largely similar to featureCounts and htseq-count, though this program doesn't handle paired-end alignments intelligently (it is, afterall, just a demonstration). The code demonstrates processing sets of overlaps and merging them for further processing. This program also demonstrates how to use different match and strand types. Note that in a real program, it'd be simpler to use the `findOverlapsBAM()` function.
+  * `testCountOverlaps` demonstrates how to count the number of overlapping elements per alignment. Note that there's no method to filter this, for example, to only count the number of exonic overlaps. For such purposes, it's better to use the findOverlaps() function and filter the results.
+  * `testOverlapsAny` is similar to `testCountOverlaps`, but simply returns a binary 0 or 1, indicating whether there's at least a single overlap.
 
 To Do
 =====
@@ -33,10 +35,10 @@ To Do
  - [X] uniqueTranscriptIDs()
  - [X] cntAttributes()
  - [X] uniqueAttributes()
- - [ ] test various overlap options
+ - [X] test various overlap options
    - [X] findOverlaps
    - [X] countOverlaps
-   - [ ] overlapsAny
+   - [X] overlapsAny
    - [X] test strandedness with above
    - [X] test match type options with above
  - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.

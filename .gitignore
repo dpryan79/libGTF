@@ -7,4 +7,5 @@ tests/testBED
 tests/testGTF
 tests/testFindOverlaps
 tests/testCountOverlaps
+tests/testOverlapsAny
 htslib
