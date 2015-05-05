@@ -18,7 +18,7 @@ char *nextField(char *str) {
 int initGTFre() {
     const char *errPtr = NULL;
     int errorOffset = 0;
-    GTFre = pcre_compile("(([\\w][\\w_]*) \"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\";?)+", 0, &errPtr, &errorOffset, NULL);
+    GTFre = pcre_compile("(?:([\\w][\\w_]*) (?|\"([^\"]+)\"|([^\"]+))[;|\r|\n])+", 0, &errPtr, &errorOffset, NULL);
     if(!GTFre) {
         fprintf(stderr, "[initGTFre] Error while compiling regular expression @%d\n", errorOffset);
         fprintf(stderr, "The error was: %s\n", errPtr);
@@ -32,10 +32,12 @@ void destroyGTFre() {
 }
 
 static void addGeneID(GTFline *l, char *value) {
+    if(!strlen(value)) return;
     assert(kputs(value, &l->gene));
 }
 
 static void addTranscriptID(GTFline *l, char *value) {
+    if(!strlen(value)) return;
     assert(kputs(value, &l->transcript));
 }
 
@@ -73,11 +75,11 @@ int addGTFAttributes(GTFline *l, GTFtree *t, char *str) {
     char *key, *value;
 
     while(offset < len && (rc = pcre_exec(GTFre, NULL, str, strlen(str), offset, 0, ovector, 12))) {
-        if(rc != 4 && rc != -1) fprintf(stderr, "[addGTFAtrributes] Warning: pcre_exec returned %i\n", rc);
-        if(rc<4) break;
-        key = strndup(str + ovector[4], ovector[5]-ovector[4]);
+        if(rc<0) break;
+        assert(rc==3);
+        key = strndup(str + ovector[2], ovector[3]-ovector[2]);
         assert(key);
-        value = strndup(str + ovector[6], ovector[7]-ovector[6]);
+        value = strndup(str + ovector[4], ovector[5]-ovector[4]);
         assert(value);
         if(strcmp(key, "gene_id") == 0) {
             addGeneID(l, value);

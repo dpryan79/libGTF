@@ -41,7 +41,7 @@ To Do
    - [X] overlapsAny
    - [X] test strandedness with above
    - [X] test match type options with above
- - [ ] The GTF parsing isn't quite correct. Tag values don't need to be quoted, but that's the current default.
+ - [X] The GTF parsing isn't quite correct. Tag values don't need to be quoted, but that's the current default.
  - [ ] We can store gene_id and transcript_id in the auxiliary info too. The don't need to be special.
  - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
  - [ ] intersect/union/diff on overlapSets
