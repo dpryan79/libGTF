@@ -136,7 +136,7 @@ GTFline *initGTFline();
 char *GTFgetGeneID(GTFtree *t, GTFentry *e);
 
 //parseBED
-GTFtree *BED2Tree(char *fname);
+GTFtree *BED2Tree(char *fname, FILTER_FUNC f);
 void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols);
 
 //parseGTF

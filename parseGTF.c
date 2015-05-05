@@ -96,10 +96,10 @@ GTFtree *GTF2Tree(char *fname, FILTER_FUNC ffunc) {
         if(str.s[0] == '#') continue;
         line = parseGTFline(line, o, str);
         if(!line) break;
-        if(ffunc != NULL) {
-            if(ffunc((void*) line)) addGTFentry(o, line);
-        } else {
+        if(ffunc == NULL) {
             addGTFentry(o, line);
+        } else {
+            if(ffunc((void*) line)) addGTFentry(o, line);
         }
     }
 

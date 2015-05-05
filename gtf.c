@@ -634,8 +634,8 @@ void printBalancedGTF(GTFnode *n, const char *chrom) {
 
 void printGTFvineR(GTFentry *e, const char* chrom) {
     if(e->left == e) return;
-    printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\" [color=red];\n", chrom, e->start, e->end, chrom, e->left->start, e->left->end);
     if(!e->left) return;
+    printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\" [color=red];\n", chrom, e->start, e->end, chrom, e->left->start, e->left->end);
     printGTFvineR(e->left, chrom);
 }
 void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str) {
@@ -644,8 +644,8 @@ void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str) {
 }
 
 void printGTFvine(GTFentry *e, const char* chrom) {
-    printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\";\n", chrom, e->start, e->end, chrom, e->right->start, e->right->end);
     if(!e->right) return;
+    printf("\t\"%s:%"PRIu32"-%"PRIu32"\" -> \"%s:%"PRIu32"-%"PRIu32"\";\n", chrom, e->start, e->end, chrom, e->right->start, e->right->end);
     printGTFvine(e->right, chrom);
 }
 void printGTFvineStart(GTFentry *e, const char *chrom, const char *str) {

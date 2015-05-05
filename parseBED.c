@@ -92,7 +92,7 @@ err :
     return NULL;
 }
 
-GTFtree *BED2Tree(char *fname) {
+GTFtree *BED2Tree(char *fname, FILTER_FUNC ffunc) {
     gzFile fp = gzopen(fname, "r");
     GTFtree *o = NULL;
     GTFline *line = initGTFline();
@@ -108,7 +108,11 @@ GTFtree *BED2Tree(char *fname) {
     while(ks_getuntil(ks, KS_SEP_LINE, &str, &dret) >= 0) {
         line = parseBEDline(line, o, str);
         if(!line) break;
-        addGTFentry(o, line);
+        if(ffunc == NULL) {
+            addGTFentry(o, line);
+        } else if(ffunc((void *) line)) {
+            addGTFentry(o, line);
+        }
     }
 
     if(line) destroyGTFline(line);
