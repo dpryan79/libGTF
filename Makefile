@@ -49,7 +49,7 @@ tests/testOverlapsAny: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testOverlapsAny tests/testOverlapsAny.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
 
 check: tests/testBED tests/testGTF tests/testFindOverlaps tests/testCountOverlaps tests/testOverlapsAny
-#	cd tests && ./test.sh && cd ..
+	cd tests && ./test.sh && cd ..
 
 clean:
 	rm -f *.o *.a tests/testBED tests/testGTF tests/testFindOverlaps

@@ -77,7 +77,7 @@ err:
     return NULL;
 }
 
-GTFtree *GTF2Tree(char *fname) {
+GTFtree *GTF2Tree(char *fname, FILTER_FUNC ffunc) {
     gzFile fp = gzopen(fname, "r");
     GTFtree *o = NULL;
     GTFline *line = initGTFline();
@@ -96,7 +96,11 @@ GTFtree *GTF2Tree(char *fname) {
         if(str.s[0] == '#') continue;
         line = parseGTFline(line, o, str);
         if(!line) break;
-        addGTFentry(o, line);
+        if(ffunc != NULL) {
+            if(ffunc((void*) line)) addGTFentry(o, line);
+        } else {
+            addGTFentry(o, line);
+        }
     }
 
     if(line) destroyGTFline(line);

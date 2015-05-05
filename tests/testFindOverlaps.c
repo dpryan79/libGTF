@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Create the GTFtree
-    t = GTF2Tree(argv[optind]);
+    t = GTF2Tree(argv[optind], NULL);
     if(!t) {
         fprintf(stderr, "Couldn't open %s or there was a problem parsing it.\n", argv[1]);
         return 1;

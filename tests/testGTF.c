@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    GTFtree *t = GTF2Tree(argv[1]);
+    GTFtree *t = GTF2Tree(argv[1],NULL);
     if(!t) {
         fprintf(stderr, "Couldn't open %s or there was a problem parsing it.\n", argv[1]);
         return 1;

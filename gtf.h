@@ -117,6 +117,11 @@ typedef struct {
     hashTable *ht;
 } uniqueSet;
 
+//A function that can be applied to all entries in a GTF/BED/etc. file as it's
+//being processed. The pointer as input is currently a GTFline *. The return
+//value is 0 (ignore entry) or 1 (keep entry).
+typedef int (*FILTER_FUNC)(void*);
+
 //gtf.c
 GTFtree * initGTFtree();
 void destroyGTFtree(GTFtree *t);
@@ -135,7 +140,7 @@ GTFtree *BED2Tree(char *fname);
 void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols);
 
 //parseGTF
-GTFtree *GTF2Tree(char *fname);
+GTFtree *GTF2Tree(char *fname, FILTER_FUNC);
 void GTFEntry2GTF(kstring_t *ks, GTFtree *t, GTFentry *e);
 
 //hashTable.c
