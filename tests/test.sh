@@ -50,15 +50,34 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 3 testFindOverlaps -m contain -s ignore
+#Test 3a testFindOverlaps -t 1 -m contain -s ignore
 #########################################
-echo -n "testFindOverlaps -m contain -s ignore ... "
+echo -n "testFindOverlaps -t 1 -m contain -s ignore ... "
 echo -e "A	ENSMUSG00000094121
 B	ENSMUSG00000094121
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
 E	Unassigned_NoFeatures
 F	Unassigned_NoFeatures
+G	ENSMUSG00000094121
+H	ENSMUSG00000094121
+I	Unassigned_NoFeatures
+J	Unassigned_NoFeatures
+K	Unassigned_NoFeatures" > correct
+./testFindOverlaps -t 1 -m contain -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 3b testFindOverlaps -m contain -s ignore
+#########################################
+echo -n "testFindOverlaps -m contain -s ignore ... "
+echo -e "A	ENSMUSG00000094121
+B	ENSMUSG00000094121
+C	Unassigned_NoFeatures
+D	Unassigned_NoFeatures
+E	ENSMUSG00000094121
+F	ENSMUSG00000094121
 G	ENSMUSG00000094121
 H	ENSMUSG00000094121
 I	Unassigned_NoFeatures
@@ -164,7 +183,26 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 9 testFindOverlaps -m contain -s same
+#Test 9a testFindOverlaps -t 1 -m contain -s same
+#########################################
+echo -n "testFindOverlaps -t 1 -m contain -s same ... "
+echo -e "A	Unassigned_NoFeatures
+B	ENSMUSG00000094121
+C	Unassigned_NoFeatures
+D	Unassigned_NoFeatures
+E	Unassigned_NoFeatures
+F	Unassigned_NoFeatures
+G	Unassigned_NoFeatures
+H	ENSMUSG00000094121
+I	Unassigned_NoFeatures
+J	Unassigned_NoFeatures
+K	Unassigned_NoFeatures" > correct
+./testFindOverlaps -t 1 -m contain -s same test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 9b testFindOverlaps -m contain -s same
 #########################################
 echo -n "testFindOverlaps -m contain -s same ... "
 echo -e "A	Unassigned_NoFeatures
@@ -172,7 +210,7 @@ B	ENSMUSG00000094121
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
 E	Unassigned_NoFeatures
-F	Unassigned_NoFeatures
+F	ENSMUSG00000094121
 G	Unassigned_NoFeatures
 H	ENSMUSG00000094121
 I	Unassigned_NoFeatures
@@ -278,14 +316,33 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 15 testFindOverlaps -m contain -s opposite
+#Test 15a testFindOverlaps -t 1 -m contain -s opposite
+#########################################
+echo -n "testFindOverlaps -t 1 -m contain -s opposite ... "
+echo -e "A	ENSMUSG00000094121
+B	Unassigned_NoFeatures
+C	Unassigned_NoFeatures
+D	Unassigned_NoFeatures
+E	Unassigned_NoFeatures
+F	Unassigned_NoFeatures
+G	ENSMUSG00000094121
+H	Unassigned_NoFeatures
+I	Unassigned_NoFeatures
+J	Unassigned_NoFeatures
+K	Unassigned_NoFeatures" > correct
+./testFindOverlaps -t 1 -m contain -s opposite test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 15b testFindOverlaps -m contain -s opposite
 #########################################
 echo -n "testFindOverlaps -m contain -s opposite ... "
 echo -e "A	ENSMUSG00000094121
 B	Unassigned_NoFeatures
 C	Unassigned_NoFeatures
 D	Unassigned_NoFeatures
-E	Unassigned_NoFeatures
+E	ENSMUSG00000094121
 F	Unassigned_NoFeatures
 G	ENSMUSG00000094121
 H	Unassigned_NoFeatures

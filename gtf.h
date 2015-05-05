@@ -140,7 +140,8 @@ GTFtree *BED2Tree(char *fname);
 void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols);
 
 //parseGTF
-GTFtree *GTF2Tree(char *fname, FILTER_FUNC);
+//N.B., the FILTER_FUNC can be NULL, in which case no filtering is performed!
+GTFtree *GTF2Tree(char *fname, FILTER_FUNC f);
 void GTFEntry2GTF(kstring_t *ks, GTFtree *t, GTFentry *e);
 
 //hashTable.c

@@ -56,9 +56,6 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
                 1);
         }
 
-        //We only care about exons...
-        os_requireFeature(os, "exon");
-
         if(os->l) {
             if(cntGeneIDs(os) == 1) {
                 printf("%s\t%s\n", bam_get_qname(b), GTFgetGeneID(t, os->overlaps[0]));
@@ -76,12 +73,37 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
     free(ks);
 }
 
+//Filter out everything **except** exon/gene/CDS/transcript entries
+int exon(void *l) {
+    GTFline *line = (GTFline *) l;
+    if(strcmp(line->feature.s, "exon") == 0) return 1;
+    return 0;
+}
+int gene(void *l) {
+    GTFline *line = (GTFline *) l;
+    if(strcmp(line->feature.s, "gene") == 0) return 1;
+    return 0;
+}
+int CDS(void *l) {
+    GTFline *line = (GTFline *) l;
+    if(strcmp(line->feature.s, "CDS") == 0) return 1;
+    return 0;
+}
+int transcript(void *l) {
+    GTFline *line = (GTFline *) l;
+    if(strcmp(line->feature.s, "transcript") == 0) return 1;
+    return 0;
+}
+
 void usage() {
     fprintf(stderr, "Usage: testFindOverlaps [OPTIONS] <annotation.gtf> <alignments.bam>\n");
     fprintf(stderr, "\n"
 "This program demostrates how to use libGTF to find the overlaps of each\n"
 "alignment in a BAM file. Currently, paired-end reads aren't treated in a\n"
 "particularly useful way. It does, however, handle spliced alignments.\n"
+"\n"
+"N.B., this program also demonstrates how a filter function works, so only\n"
+"entries marked as \"exon\" are used!\n"
 "\nOPTIONS\n"
 "-m STR  Match type. Possible values are 'any', 'exact', 'contain', 'within',\n"
 "        'start' and 'end'. These values are equivalent to the 'type' parameter\n"
@@ -93,6 +115,8 @@ void usage() {
 "        Normally, a subject and query will overlaps if either of them has a '*'\n"
 "        strand. The 'exact' option indicates that strands must exactly match.\n"
 "-q INT  Minimum MAPQ value. Default is [0].\n"
+"-t INT  Entry type to include (according to the 'feature' column). 0: all\n"
+"        entries, 1: exon, 2: gene, 3: CDS, 4: transcript. Default is 0.\n"
 );
 }
 
@@ -100,13 +124,14 @@ int main(int argc, char *argv[]) {
     int matchType = 0;
     int strandType = 0;
     int minMapq = 0;
+    int type = 0;
     char c;
     htsFile *fp = NULL;
     bam_hdr_t *hdr = NULL;
     GTFtree *t = NULL;
 
     opterr = 0; //Disable error messages
-    while((c = getopt(argc, argv, "m:s:q:h")) >= 0) {
+    while((c = getopt(argc, argv, "m:s:q:ht:")) >= 0) {
         switch(c) {
         case 'm' :
             if(strcmp(optarg, "any") == 0) matchType = 0;
@@ -123,6 +148,13 @@ int main(int argc, char *argv[]) {
             else if(strcmp(optarg, "opposite") == 0) strandType = 2;
             else if(strcmp(optarg, "exact") == 0) strandType = 3;
             else fprintf(stderr, "Unknown -s option '%s', ignoring\n", optarg);
+            break;
+        case 't' :
+            type = atoi(optarg);
+            if(type<0 || type > 4) {
+                fprintf(stderr, "Error: -t must be between 0 and 4!\n");
+                return 1;
+            }
             break;
         case 'h' :
             usage();
@@ -152,7 +184,11 @@ int main(int argc, char *argv[]) {
     }
 
     //Create the GTFtree
-    t = GTF2Tree(argv[optind], NULL);
+    if(!type) t = GTF2Tree(argv[optind], NULL);
+    else if(type==1) t = GTF2Tree(argv[optind], exon);
+    else if(type==2) t = GTF2Tree(argv[optind], gene);
+    else if(type==3) t = GTF2Tree(argv[optind], CDS);
+    else if(type==4) t = GTF2Tree(argv[optind], transcript);
     if(!t) {
         fprintf(stderr, "Couldn't open %s or there was a problem parsing it.\n", argv[1]);
         return 1;
