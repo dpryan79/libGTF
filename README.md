@@ -41,12 +41,11 @@ To Do
    - [X] overlapsAny
    - [X] test strandedness with above
    - [X] test match type options with above
+   - [X] The above should accept a filter function, as with GTF2Tree and BED2Tree.
  - [X] The GTF parsing isn't quite correct. Tag values don't need to be quoted, but that's the current default.
- - [ ] We can store gene_id and transcript_id in the auxiliary info too. The don't need to be special.
+ - [X] Store gene_id and transcript_id along with other attributes.
  - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
  - [ ] intersect/union/diff on overlapSets
- - [ ] findOverlaps, but only if feature is XXX or not YYY (allow lists)
- - [ ] add a findClosest() function
  - [ ] compare with featureCounts/bedtools and ensure the results are the same
  - [ ] parseGFF?
  - [ ] test for GFF?

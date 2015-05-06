@@ -5,7 +5,20 @@
 #include "../gtf.h"
 #include "../htslib/htslib/sam.h"
 
-void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int strandType, int minMapq) {
+int onlyPseudo(GTFtree *t, GTFentry *e) {
+    char *biotype = getAttribute(t, e, "gene_biotype");
+    if(!biotype) return 0;
+    if(strcmp(biotype, "processed_pseudogene") == 0) return 1;
+    return 0;
+}
+int noPseudo(GTFtree *t, GTFentry *e) {
+    char *biotype = getAttribute(t, e, "gene_biotype");
+    if(!biotype) return 1;
+    if(strcmp(biotype, "processed_pseudogene") == 0) return 0;
+    return 1;
+}
+
+void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, int strandType, int minMapq, FILTER_ENTRY_FUNC ffunc) {
     bam1_t *b = bam_init1();
     overlapSet *os = os_init(t);
     kstring_t *ks = calloc(1, sizeof(kstring_t));
@@ -38,7 +51,8 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
                           (b->core.flag&16)?1:0,
                           matchType,
                           strandType,
-                          1); //Note that we must run os_reset() as the end!
+                          1,
+                          ffunc); //Note that we must run os_reset() as the end!
                 }
                 start = end + bam_cigar_oplen(CIGAR[i]) + 1;
                 end = start-1;
@@ -53,11 +67,13 @@ void findOverlapsBAM2(GTFtree *t, htsFile *fp, bam_hdr_t *hdr, int matchType, in
                 (b->core.flag&16)?1:0,
                 matchType,
                 strandType,
-                1);
+                1,
+                ffunc);
         }
 
         if(os->l) {
-            if(cntGeneIDs(os) == 1) {
+//            if(cntGeneIDs(os) == 1) {
+            if(cntAttributes(os, "gene_id") == 1) {
                 printf("%s\t%s\n", bam_get_qname(b), GTFgetGeneID(t, os->overlaps[0]));
             } else {
                 printf("%s\tAmbiguous\n", bam_get_qname(b));
@@ -117,6 +133,9 @@ void usage() {
 "-q INT  Minimum MAPQ value. Default is [0].\n"
 "-t INT  Entry type to include (according to the 'feature' column). 0: all\n"
 "        entries, 1: exon, 2: gene, 3: CDS, 4: transcript. Default is 0.\n"
+"-f INT  Denotes a filter function to use. 0: include all entries, 1: exclude\n"
+"        entries with gene_biotype set to 'processed_pseudogene', 2: include\n"
+"        only entries with gene_biotype set to 'processed_pseudogene'\n"
 );
 }
 
@@ -125,13 +144,14 @@ int main(int argc, char *argv[]) {
     int strandType = 0;
     int minMapq = 0;
     int type = 0;
+    FILTER_ENTRY_FUNC ffunc = NULL;
     char c;
     htsFile *fp = NULL;
     bam_hdr_t *hdr = NULL;
     GTFtree *t = NULL;
 
     opterr = 0; //Disable error messages
-    while((c = getopt(argc, argv, "m:s:q:ht:")) >= 0) {
+    while((c = getopt(argc, argv, "m:s:q:ht:f:")) >= 0) {
         switch(c) {
         case 'm' :
             if(strcmp(optarg, "any") == 0) matchType = 0;
@@ -155,6 +175,10 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Error: -t must be between 0 and 4!\n");
                 return 1;
             }
+            break;
+        case 'f' :
+            if(atoi(optarg) == 1) ffunc = (FILTER_ENTRY_FUNC) noPseudo;
+            else if(atoi(optarg) == 2) ffunc = (FILTER_ENTRY_FUNC) onlyPseudo;
             break;
         case 'h' :
             usage();
@@ -208,7 +232,7 @@ int main(int argc, char *argv[]) {
         sam_close(fp);
     }
 
-    findOverlapsBAM2(t, fp, hdr, matchType, strandType, minMapq);
+    findOverlapsBAM2(t, fp, hdr, matchType, strandType, minMapq, ffunc);
 
     destroyGTFtree(t);
     bam_hdr_destroy(hdr);

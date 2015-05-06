@@ -154,40 +154,6 @@ void os_requireAttributes(overlapSet *os, char **key, char **val, int len) {
     }
 }
 
-void os_requireSource(overlapSet *os, char *val) {
-    int i;
-    int32_t valHash;
-
-    if(!os->l) return;
-
-    valHash = str2valHT(os->tree->htSources, val);
-    assert(valHash>=0);
-
-    for(i=0; i<os->l; i++) {
-        if(os->overlaps[i]->source != valHash) {
-            os_exclude(os, i);
-            i--;
-        }
-    }
-}
-
-void os_requireFeature(overlapSet *os, char *val) {
-    int i;
-    int32_t valHash;
-
-    if(!os->l) return;
-
-    valHash = str2valHT(os->tree->htFeatures, val);
-    assert(valHash>=0);
-
-    for(i=0; i<os->l; i++) {
-        if(os->overlaps[i]->feature != valHash) {
-            os_exclude(os, i);
-            i--;
-        }
-    }
-}
-
 /*******************************************************************************
 *
 * uniqueSet functions
@@ -238,46 +204,6 @@ static int int32_t_cmp(const void *a, const void *b) {
     return ia-ib;
 }
 
-int32_t cntGeneIDs(overlapSet *os) {
-    int32_t i, last, n = 0;
-    int32_t IDs[os->l];
-    if(os->l == 0) return 0;
-    if(os->l == 1) return 1;
-
-    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->gene_id;
-    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
-
-    last = IDs[0];
-    n = 1;
-    for(i = 1; i<os->l; i++) {
-        if(IDs[i] != last) {
-            n++;
-            last = IDs[i];
-        }
-    }
-    return n;
-}
-
-int32_t cntTranscriptIDs(overlapSet *os) {
-    int32_t i, last, n = 0;
-    int32_t IDs[os->l];
-    if(os->l == 0) return 0;
-    if(os->l == 1) return 1;
-
-    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->transcript_id;
-    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
-
-    last = IDs[0];
-    n = 1;
-    for(i = 1; i<os->l; i++) {
-        if(IDs[i] != last) {
-            n++;
-            last = IDs[i];
-        }
-    }
-    return n;
-}
-
 int32_t cntAttributes(overlapSet *os, char *attributeName) {
     int32_t IDs[os->l], i, j, key, last, n = 0;
     if(!strExistsHT(os->tree->htAttributes, attributeName)) return n;
@@ -303,52 +229,6 @@ int32_t cntAttributes(overlapSet *os, char *attributeName) {
         }
     }
     return n;
-}
-
-uniqueSet *uniqueGeneIDs(overlapSet *os) {
-    if(os->l == 0) return NULL;
-    int32_t i, last;
-    int32_t IDs[os->l];
-    uniqueSet *us = us_init(os->tree->htGenes);
-
-    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->gene_id;
-    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
-
-    last = IDs[0];
-    if(IDs[0] >= 0) us_push(us, last);
-    for(i=1; i<os->l; i++) {
-        if(IDs[i] != last) {
-            us_push(us, IDs[i]);
-            last = IDs[i];
-        }
-    }
-
-    if(us->l) return us;
-    us_destroy(us);
-    return NULL;
-}
-
-uniqueSet *uniqueTranscriptIDs(overlapSet *os) {
-    if(os->l == 0) return NULL;
-    int32_t i, last;
-    int32_t IDs[os->l];
-    uniqueSet *us = us_init(os->tree->htTranscripts);
-
-    for(i = 0; i<os->l; i++) IDs[i] = os->overlaps[i]->transcript_id;
-    qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
-
-    last = IDs[0];
-    if(IDs[0] >= 0) us_push(us, last);
-    for(i=1; i<os->l; i++) {
-        if(IDs[i] != last) {
-            us_push(us, IDs[i]);
-            last = IDs[i];
-        }
-    }
-
-    if(us->l) return us;
-    us_destroy(us);
-    return NULL;
 }
 
 uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
@@ -388,7 +268,7 @@ uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
 * Node iterator functions
 *
 *******************************************************************************/
-//bit 1: go left, bit 2: go right (a value of 3 is then "do both"
+//bit 1: go left, bit 2: go right (a value of 3 is then "do both")
 static int centerDirection(uint32_t start, uint32_t end, GTFnode *n) {
     if(n->center >= start && n->center < end) return 3;
     if(n->center < start) return 2;
@@ -426,53 +306,56 @@ static void filterStrand(overlapSet *os, int strand, int strandType) {
     }
 }
 
-static void pushOverlaps(overlapSet *os, GTFentry *e, uint32_t start, uint32_t end, int comparisonType, int direction) {
+static void pushOverlaps(overlapSet *os, GTFtree *t, GTFentry *e, uint32_t start, uint32_t end, int comparisonType, int direction, FILTER_ENTRY_FUNC ffunc) {
     int dir;
+    int keep = 1;
     if(!e) return;
+
+    if(ffunc) keep = ffunc(t, e);
 
     switch(comparisonType) {
     case GTF_MATCH_EXACT :
         if((dir = rangeExact(start, end, e)) == 0) {
-            os_push(os, e);
+            if(keep) os_push(os, e);
         }
         break;
     case GTF_MATCH_WITHIN :
         if((dir = rangeAny(start, end, e)) == 0) {
-            if(rangeWithin(start, end ,e) == 0) os_push(os, e);
+            if(keep) if(rangeWithin(start, end ,e) == 0) os_push(os, e);
         }
         break;
     case GTF_MATCH_CONTAIN :
         if((dir = rangeAny(start, end, e)) == 0) {
-            if(rangeContains(start, end, e) == 0) os_push(os, e);
+            if(keep) if(rangeContains(start, end, e) == 0) os_push(os, e);
         }
         break;
     case GTF_MATCH_START :
         if((dir = rangeStart(start, end, e)) == 0) {
-            os_push(os, e);
+            if(keep) os_push(os, e);
         }
         break;
     case GTF_MATCH_END :
         if((dir = rangeEnd(start, end, e)) == 0) {
-            os_push(os, e);
+            if(keep) os_push(os, e);
         }
         break;
     default :
         if((dir = rangeAny(start, end, e)) == 0) {
-            os_push(os, e);
+            if(keep) os_push(os, e);
         }
         break;
     }
 
     if(direction) {
         if(dir > 0) return;
-        pushOverlaps(os, e->right, start, end, comparisonType, direction);
+        pushOverlaps(os, t, e->right, start, end, comparisonType, direction, ffunc);
     } else {
         if(dir < 0) return;
-        pushOverlaps(os, e->left, start, end, comparisonType, direction);
+        pushOverlaps(os, t, e->left, start, end, comparisonType, direction, ffunc);
     }
 }
 
-static int32_t countOverlapsEntry(GTFentry *e, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int direction, int32_t max) {
+static int32_t countOverlapsEntry(GTFtree *t, GTFentry *e, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int direction, int32_t max, FILTER_ENTRY_FUNC ffunc) {
     int dir;
     int32_t cnt = 0;
     if(!e) return cnt;
@@ -514,48 +397,52 @@ static int32_t countOverlapsEntry(GTFentry *e, uint32_t start, uint32_t end, int
         if(!matchingStrand(e, strand, strandType)) cnt = 0;
     }
 
+    if(cnt && ffunc) {
+        if(!ffunc(t, e)) cnt = 0;
+    }
+
     if(max && cnt >= max) return max;
 
     if(direction) {
         if(dir > 0) return cnt;
-        return cnt + countOverlapsEntry(e->right, start, end, strand, matchType, strandType, direction, max);
+        return cnt + countOverlapsEntry(t, e->right, start, end, strand, matchType, strandType, direction, max, ffunc);
     } else {
         if(dir < 0) return cnt;
-        return cnt + countOverlapsEntry(e->left, start, end, strand, matchType, strandType, direction, max);
+        return cnt + countOverlapsEntry(t, e->left, start, end, strand, matchType, strandType, direction, max, ffunc);
     }
 }
 
-static void pushOverlapsNode(overlapSet *os, GTFnode *n, uint32_t start, uint32_t end, int matchType) {
+static void pushOverlapsNode(overlapSet *os, GTFtree *t, GTFnode *n, uint32_t start, uint32_t end, int matchType, FILTER_ENTRY_FUNC ffunc) {
     int dir;
     if(!n) return;
     dir = centerDirection(start, end, n);
 
     if(dir&1) {
-        pushOverlaps(os, n->starts, start, end, matchType, 1);
-        pushOverlapsNode(os, n->left, start, end, matchType);
+        pushOverlaps(os, t, n->starts, start, end, matchType, 1, ffunc);
+        pushOverlapsNode(os, t, n->left, start, end, matchType, ffunc);
     } 
     if(dir&2) {
-        if(dir!=3) pushOverlaps(os, n->ends, start, end, matchType, 0);
-        pushOverlapsNode(os, n->right, start, end, matchType);
+        if(dir!=3) pushOverlaps(os, t, n->ends, start, end, matchType, 0, ffunc);
+        pushOverlapsNode(os, t, n->right, start, end, matchType, ffunc);
     }
 }
 
-static int32_t countOverlapsNode(GTFnode *n, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int32_t max) {
+static int32_t countOverlapsNode(GTFtree *t, GTFnode *n, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int32_t max, FILTER_ENTRY_FUNC ffunc) {
     int32_t cnt = 0;
     int dir;
     if(!n) return cnt;
     dir = centerDirection(start, end, n);
 
     if(dir&1) {
-        cnt += countOverlapsEntry(n->starts, start, end, strand, matchType, strandType, 1, max);
+        cnt += countOverlapsEntry(t, n->starts, start, end, strand, matchType, strandType, 1, max, ffunc);
         if(max && cnt >= max) return max;
-        cnt += countOverlapsNode(n->left, start, end, strand, matchType, strandType, max);
+        cnt += countOverlapsNode(t, n->left, start, end, strand, matchType, strandType, max, ffunc);
         if(max && cnt >= max) return max;
     } 
     if(dir&2) {
-        if(dir!=3) cnt += countOverlapsEntry(n->starts, start, end, strand, matchType, strandType, 0, max);
+        if(dir!=3) cnt += countOverlapsEntry(t, n->starts, start, end, strand, matchType, strandType, 0, max, ffunc);
         if(max && cnt >= max) return max;
-        cnt += countOverlapsNode(n->right, start, end, strand, matchType, strandType, max);
+        cnt += countOverlapsNode(t, n->right, start, end, strand, matchType, strandType, max, ffunc);
         if(max && cnt >= max) return max;
     }
     return cnt;
@@ -566,7 +453,7 @@ static int32_t countOverlapsNode(GTFnode *n, uint32_t start, uint32_t end, int s
 * Driver functions for end use.
 *
 *******************************************************************************/
-overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS) {
+overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc) {
     int32_t tid = str2valHT(t->htChroms, chrom);
     overlapSet *out = os;
 
@@ -579,14 +466,14 @@ overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t star
         return out;
     }
 
-    pushOverlapsNode(out, (GTFnode*) t->chroms[tid]->tree, start, end, matchType);
+    pushOverlapsNode(out, t, (GTFnode*) t->chroms[tid]->tree, start, end, matchType, ffunc);
     if(out->l) filterStrand(out, strand, strandType);
     if(out->l) os_sort(out);
 
     return out;
 }
 
-int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType) {
+int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc) {
     int32_t tid = str2valHT(t->htChroms, chrom);
     if(tid<0) return 0;
 
@@ -595,10 +482,10 @@ int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int
         return 0;
     }
 
-    return countOverlapsNode((GTFnode*) t->chroms[tid]->tree, start, end, strand, matchType, strandType, 0);
+    return countOverlapsNode(t, (GTFnode*) t->chroms[tid]->tree, start, end, strand, matchType, strandType, 0, ffunc);
 }
 
-int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType) {
+int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc) {
     int32_t tid = str2valHT(t->htChroms, chrom);
     if(tid<0) return 0;
 
@@ -607,7 +494,7 @@ int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int stran
         return 0;
     }
 
-    return countOverlapsNode((GTFnode*) t->chroms[tid]->tree, start, end, strand, matchType, strandType, 1);
+    return countOverlapsNode(t, (GTFnode*) t->chroms[tid]->tree, start, end, strand, matchType, strandType, 1, ffunc);
 }
 
 /*******************************************************************************
@@ -615,7 +502,7 @@ int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int stran
 * Convenience functions for alignments
 *
 *******************************************************************************/
-overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType) {
+overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc) {
     int32_t i, start, end;
     uint32_t *CIGAR, op;
     char *chrom = NULL;
@@ -636,14 +523,14 @@ overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hd
             end += bam_cigar_oplen(CIGAR[i]);
         } else if(bam_cigar_type(op) == 2) { //D or N
             if(end >= start) {
-                os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1);
+                os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc);
             }
             start = end + bam_cigar_oplen(CIGAR[i]) + 1;
             end = start-1;
         }
     }
     if(end >= start) {
-        os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1);
+        os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc);
     }
 
     return os;

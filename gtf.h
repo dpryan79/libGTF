@@ -121,6 +121,7 @@ typedef struct {
 //being processed. The pointer as input is currently a GTFline *. The return
 //value is 0 (ignore entry) or 1 (keep entry).
 typedef int (*FILTER_FUNC)(void*);
+typedef int (*FILTER_ENTRY_FUNC)(GTFtree *, void*);
 
 //gtf.c
 GTFtree * initGTFtree();
@@ -167,10 +168,10 @@ void os_requireSource(overlapSet *os, char *val);
 void os_requireFeature(overlapSet *os, char *val);
 void us_destroy(uniqueSet *us);
 char *us_val(uniqueSet *us, int32_t i);
-overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS);
-int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
-int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType);
-overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType);
+overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc);
+int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
+int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
+overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
 int32_t cntGeneIDs(overlapSet *os);
 int32_t cntTranscriptIDs(overlapSet *os);
 int32_t cntAttributes(overlapSet *os, char *attributeName); //N.B., if a record lacks an attribute, it's ignored

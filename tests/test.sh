@@ -12,7 +12,7 @@ check() {
 }
 
 #########################################
-#Test 1 testFindOverlaps -m any -s ignore
+#Test 1a testFindOverlaps -m any -s ignore
 #########################################
 echo -n "testFindOverlaps -m any -s ignore ... "
 echo -e "A	ENSMUSG00000094121
@@ -27,6 +27,44 @@ I	ENSMUSG00000094121
 J	ENSMUSG00000094121
 K	Ambiguous" > correct
 ./testFindOverlaps -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 1b testFindOverlaps -f 1 -m any -s ignore
+#########################################
+echo -n "testFindOverlaps -f 1 -m any -s ignore ... "
+echo -e "A	ENSMUSG00000094121
+B	ENSMUSG00000094121
+C	Unassigned_NoFeatures
+D	Unassigned_NoFeatures
+E	ENSMUSG00000094121
+F	ENSMUSG00000094121
+G	ENSMUSG00000094121
+H	ENSMUSG00000094121
+I	Unassigned_NoFeatures
+J	Unassigned_NoFeatures
+K	ENSMUSG00000094576" > correct
+./testFindOverlaps -f 1 -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 1c testFindOverlaps -f 2 -m any -s ignore
+#########################################
+echo -n "testFindOverlaps -f 2 -m any -s ignore ... "
+echo -e "A	ENSMUSG00000094121
+B	ENSMUSG00000094121
+C	ENSMUSG00000094121
+D	ENSMUSG00000094121
+E	ENSMUSG00000094121
+F	ENSMUSG00000094121
+G	ENSMUSG00000094121
+H	ENSMUSG00000094121
+I	ENSMUSG00000094121
+J	ENSMUSG00000094121
+K	ENSMUSG00000094121" > correct
+./testFindOverlaps -f 2 -m any -s ignore test.gtf test.sam > seen
 check seen correct
 rm seen correct
 
@@ -88,7 +126,7 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 4 testFindOverlaps -m within -s ignore
+#Test 4a testFindOverlaps -m within -s ignore
 #########################################
 echo -n "testFindOverlaps -m within -s ignore ... "
 echo -e "A	ENSMUSG00000094121
@@ -103,6 +141,42 @@ I	ENSMUSG00000094121
 J	ENSMUSG00000094121
 K	Ambiguous" > correct
 ./testFindOverlaps -m within -s ignore test.gtf test.sam > seen
+check seen correct
+
+#########################################
+#Test 4b testFindOverlaps -f 1 -m within -s ignore
+#########################################
+echo -n "testFindOverlaps -f 1 -m within -s ignore ... "
+echo -e "A	Unassigned_NoFeatures
+B	Unassigned_NoFeatures
+C	Unassigned_NoFeatures
+D	Unassigned_NoFeatures
+E	Unassigned_NoFeatures
+F	Unassigned_NoFeatures
+G	Unassigned_NoFeatures
+H	Unassigned_NoFeatures
+I	Unassigned_NoFeatures
+J	Unassigned_NoFeatures
+K	ENSMUSG00000094576" > correct
+./testFindOverlaps -f 1 -m within -s ignore test.gtf test.sam > seen
+check seen correct
+
+#########################################
+#Test 4c testFindOverlaps -f 2 -m within -s ignore
+#########################################
+echo -n "testFindOverlaps -f 2 -m within -s ignore ... "
+echo -e "A	ENSMUSG00000094121
+B	ENSMUSG00000094121
+C	ENSMUSG00000094121
+D	ENSMUSG00000094121
+E	ENSMUSG00000094121
+F	ENSMUSG00000094121
+G	Unassigned_NoFeatures
+H	Unassigned_NoFeatures
+I	ENSMUSG00000094121
+J	ENSMUSG00000094121
+K	ENSMUSG00000094121" > correct
+./testFindOverlaps -f 2 -m within -s ignore test.gtf test.sam > seen
 check seen correct
 rm seen correct
 
@@ -411,7 +485,7 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 19 testCountOverlaps -m any -s ignore
+#Test 19a testCountOverlaps -m any -s ignore
 #########################################
 echo -n "testCountOverlaps -m any -s ignore ... "
 echo -e "A	3
@@ -426,6 +500,44 @@ I	2
 J	2
 K	4" > correct
 ./testCountOverlaps -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 19b testCountOverlaps -f 1 -m any -s ignore
+#########################################
+echo -n "testCountOverlaps -f 1 -m any -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	1
+F	1
+G	1
+H	1
+I	0
+J	0
+K	2" > correct
+./testCountOverlaps -f 1 -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 19c testCountOverlaps -f 2 -m any -s ignore
+#########################################
+echo -n "testCountOverlaps -f 2 -m any -s ignore ... "
+echo -e "A	2
+B	2
+C	2
+D	2
+E	2
+F	2
+G	2
+H	2
+I	2
+J	2
+K	2" > correct
+./testCountOverlaps -f 2 -m any -s ignore test.gtf test.sam > seen
 check seen correct
 rm seen correct
 
@@ -449,7 +561,7 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 21 testCountOverlaps -m contain -s ignore
+#Test 21a testCountOverlaps -m contain -s ignore
 #########################################
 echo -n "testCountOverlaps -m contain -s ignore ... "
 echo -e "A	3
@@ -464,6 +576,44 @@ I	0
 J	0
 K	0" > correct
 ./testCountOverlaps -m contain -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 21b testCountOverlaps -f 1 -m contain -s ignore
+#########################################
+echo -n "testCountOverlaps -f 1 -m contain -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	1
+F	1
+G	1
+H	1
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -f 1 -m contain -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 21c testCountOverlaps -f 2 -m contain -s ignore
+#########################################
+echo -n "testCountOverlaps -f 2 -m contain -s ignore ... "
+echo -e "A	2
+B	2
+C	0
+D	0
+E	0
+F	0
+G	2
+H	2
+I	0
+J	0
+K	0" > correct
+./testCountOverlaps -f 2 -m contain -s ignore test.gtf test.sam > seen
 check seen correct
 rm seen correct
 
@@ -753,7 +903,7 @@ check seen correct
 rm seen correct
 
 #########################################
-#Test 37 testOverlapsAny -m any -s ignore
+#Test 37a testOverlapsAny -m any -s ignore
 #########################################
 echo -n "testOverlapsAny -m any -s ignore ... "
 echo -e "A	1
@@ -768,6 +918,44 @@ I	1
 J	1
 K	1" > correct
 ./testOverlapsAny -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 37b testOverlapsAny -f 1 -m any -s ignore
+#########################################
+echo -n "testOverlapsAny -f 1 -m any -s ignore ... "
+echo -e "A	1
+B	1
+C	0
+D	0
+E	1
+F	1
+G	1
+H	1
+I	0
+J	0
+K	1" > correct
+./testOverlapsAny -f 1 -m any -s ignore test.gtf test.sam > seen
+check seen correct
+rm seen correct
+
+#########################################
+#Test 37c testOverlapsAny -f 2 -m any -s ignore
+#########################################
+echo -n "testOverlapsAny -f 2 -m any -s ignore ... "
+echo -e "A	1
+B	1
+C	1
+D	1
+E	1
+F	1
+G	1
+H	1
+I	1
+J	1
+K	1" > correct
+./testOverlapsAny -f 2 -m any -s ignore test.gtf test.sam > seen
 check seen correct
 rm seen correct
 

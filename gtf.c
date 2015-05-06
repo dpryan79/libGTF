@@ -22,8 +22,8 @@ GTFtree * initGTFtree() {
     t->htChroms = initHT(128);
     t->htSources = initHT(128);
     t->htFeatures = initHT(128);
-    t->htGenes = initHT(128);
-    t->htTranscripts = initHT(128);
+//    t->htGenes = initHT(128);
+//    t->htTranscripts = initHT(128);
     t->htAttributes = initHT(128);
 
     return t;
@@ -59,8 +59,8 @@ void destroyGTFtree(GTFtree *t) {
 
     destroyHT(t->htChroms);
     destroyHT(t->htSources);
-    destroyHT(t->htGenes);
-    destroyHT(t->htTranscripts);
+//    destroyHT(t->htGenes);
+//    destroyHT(t->htTranscripts);
     destroyHT(t->htFeatures);
     destroyHT(t->htAttributes);
 
@@ -87,7 +87,8 @@ void addChrom(GTFtree *t) {
 }
 
 void addGTFentry(GTFtree *t, GTFline *l) {
-    int32_t IDchrom, IDgene, IDtranscript, IDfeature, IDsource;
+//    int32_t IDchrom, IDgene, IDtranscript, IDfeature, IDsource;
+    int32_t IDchrom, IDfeature, IDsource;
     assert(t->balanced==0); //Should just switch to insertGTFentry(), which remains to be written
 
     //Chromosome
@@ -103,6 +104,7 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     } else {
         IDsource = str2valHT(t->htSources, l->source.s);
     }
+/*
     //gene
     if(!strExistsHT(t->htGenes, l->gene.s)) {
         IDgene = addHTelement(t->htGenes, l->gene.s);
@@ -115,6 +117,7 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     } else {
         IDtranscript = str2valHT(t->htTranscripts, l->transcript.s);
     }
+*/
     //feature
     if(!strExistsHT(t->htFeatures, l->feature.s)) {
         IDfeature = addHTelement(t->htFeatures, l->feature.s);
@@ -136,8 +139,8 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     e->strand = l->strand;
     e->frame = l->frame;
     e->score = l->score;
-    e->gene_id = IDgene;
-    e->transcript_id = IDtranscript;
+//    e->gene_id = IDgene;
+//    e->transcript_id = IDtranscript;
     e->nAttributes = l->nAttributes;
     e->attrib = l->attrib;
     assert(l->end > l->start);
@@ -160,21 +163,6 @@ void addGTFentry(GTFtree *t, GTFline *l) {
 * Sorting functions
 *
 *******************************************************************************/
-
-//If a list is circular to the right, it won't be afterward
-/*
-uint32_t getVineLength(GTFentry *e) {
-    uint32_t l = 0;
-    GTFentry *p = e;
-    while(p) {
-        l++;
-        if(p->right == e) p->right = NULL;
-        p = p->right;
-    }
-    return l;
-}
-*/
-
 GTFentry *getMiddleR(GTFentry *e, uint32_t pos) {
     uint32_t i;
     GTFentry *tmp, *o = e;
@@ -546,6 +534,7 @@ void GTFline_reset(GTFline *l) {
         l->source.l = 0;
         l->source.s[0] = '\0';
     }
+/*
     if(l->gene.s) {
         l->gene.l = 0;
         l->gene.s[0] = '\0';
@@ -554,6 +543,7 @@ void GTFline_reset(GTFline *l) {
         l->transcript.l = 0;
         l->transcript.s[0] = '\0';
     }
+*/
     l->strand = 3;
     l->frame = 3;
     l->nAttributes = 0;
@@ -566,8 +556,8 @@ void destroyGTFline(GTFline *l) {
     if(l->chrom.s) free(l->chrom.s);
     if(l->feature.s) free(l->feature.s);
     if(l->source.s) free(l->source.s);
-    if(l->gene.s) free(l->gene.s);
-    if(l->transcript.s) free(l->transcript.s);
+//    if(l->gene.s) free(l->gene.s);
+//    if(l->transcript.s) free(l->transcript.s);
     if(l->nAttributes) {
         for(i=0; i<l->nAttributes; i++) {
             free(l->attrib[i]);
@@ -591,8 +581,10 @@ GTFline *initGTFline() {
 * Accessors
 *
 *******************************************************************************/
+//This should be a define
 char *GTFgetGeneID(GTFtree *t, GTFentry *e) {
-    return val2strHT(t->htGenes, e->gene_id);
+//    return val2strHT(t->htGenes, e->gene_id);
+    return getAttribute(t, e, "gene_id");
 }
 
 /*******************************************************************************

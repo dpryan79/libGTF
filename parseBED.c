@@ -32,12 +32,13 @@ GTFline * parseBEDline(GTFline *o, GTFtree *t, kstring_t ks) {
     o->end = strtoull(p, &end, 10);
     if(*end) goto err;
 
-    //name, stored as "gene"
+    //name, stored as "gene_id"
     p = nextField(NULL);
     if(!p) return o;
-    assert(kputs(p, &o->gene));
+    addAttribute(o, t, "gene_id", p);
+    //assert(kputs(p, &o->gene));
 
-    //Score, not handled
+    //Score
     p = nextField(NULL);
     if(!p) return o;
     if(strcmp(p, ".") == 0) o->score = DBL_MAX;
@@ -140,9 +141,11 @@ void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols) {
     if(ncols <= 3) return;
 
     //Name (in gene_id)
-    assert(e->gene_id);
+    //assert(e->gene_id);
     assert(kputc('\t', ks));
-    assert(kputs(val2strHT(t->htGenes, e->gene_id), ks));
+    //assert(kputs(val2strHT(t->htGenes, e->gene_id), ks));
+    val = getAttribute(t, e, "thickEnd");
+    assert(kputs(val, ks));
     if(ncols <= 4) return;
     
     //Score

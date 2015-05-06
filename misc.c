@@ -31,6 +31,7 @@ void destroyGTFre() {
     pcre_free(GTFre);
 }
 
+/*
 static void addGeneID(GTFline *l, char *value) {
     if(!strlen(value)) return;
     assert(kputs(value, &l->gene));
@@ -40,6 +41,7 @@ static void addTranscriptID(GTFline *l, char *value) {
     if(!strlen(value)) return;
     assert(kputs(value, &l->transcript));
 }
+*/
 
 static Attribute *makeAttribute(GTFline *l, GTFtree *t, char *key, char *value) {
     int32_t idx;
@@ -81,13 +83,15 @@ int addGTFAttributes(GTFline *l, GTFtree *t, char *str) {
         assert(key);
         value = strndup(str + ovector[4], ovector[5]-ovector[4]);
         assert(value);
+/*
         if(strcmp(key, "gene_id") == 0) {
             addGeneID(l, value);
         } else if(strcmp(key, "transcript_id") == 0) {
             addTranscriptID(l, value);
         } else {
+*/
             addAttribute(l, t, key, value);
-        }
+//        }
         free(key);
         free(value);
         offset = ovector[2*rc-1];
