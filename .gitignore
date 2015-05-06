@@ -8,4 +8,6 @@ tests/testGTF
 tests/testFindOverlaps
 tests/testCountOverlaps
 tests/testOverlapsAny
+tests/*.bam
+tests/*.bai
 htslib
