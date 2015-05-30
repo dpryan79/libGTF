@@ -113,6 +113,11 @@ typedef struct {
 
 typedef struct {
     int32_t l, m;
+    overlapSet **os;
+} overlapSetList;
+
+typedef struct {
+    int32_t l, m;
     int32_t *IDs;
     hashTable *ht;
 } uniqueSet;
@@ -121,7 +126,7 @@ typedef struct {
 //being processed. The pointer as input is currently a GTFline *. The return
 //value is 0 (ignore entry) or 1 (keep entry).
 typedef int (*FILTER_FUNC)(void*);
-typedef int (*FILTER_ENTRY_FUNC)(GTFtree *, void*);
+typedef int (*FILTER_ENTRY_FUNC)(GTFtree *, GTFentry *);
 
 //gtf.c
 GTFtree * initGTFtree();

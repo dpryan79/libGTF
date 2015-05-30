@@ -103,6 +103,13 @@ static void os_push(overlapSet *os, GTFentry *e) {
     os->overlaps[os->l++] = e;
 }
 
+overlapSet *os_dup(overlapSet *os) {
+    int i;
+    overlapSet *os2 = os_init();
+    for(i=0; i<os->l; i++) os_push(os2, os->overlaps[i]);
+    return os2;
+}
+
 void os_exclude(overlapSet *os, int i) {
     int j;
     for(j=i; j<os->l-1; j++) os->overlaps[j] = os->overlaps[j+1];
@@ -152,6 +159,65 @@ void os_requireAttributes(overlapSet *os, char **key, char **val, int len) {
             }
         }
     }
+}
+
+/*******************************************************************************
+*
+* OverlapSetList functions
+*
+*******************************************************************************/
+overlapSetList *osl_init() {
+    overlapSetList *osl = calloc(1, sizeof(overlapSetList));
+    assert(osl);
+    return osl;
+}
+
+void osl_reset(overlapSetList *osl) {
+    int i;
+    for(i=0; i<osl->l; i++) os_destroy(osl->os[i]);
+    osl->l = 0;
+}
+
+void osl_destroy(overlapSetList *osl) {
+    osl_reset(osl);
+    if(osl->os) free(osl->os);
+    free(osl);
+}
+
+void osl_grow(overlapSetList *osl) {
+    int i;
+    osl->m++;
+    kroundup32(osl->m);
+    osl->os = realloc(osl->os, osl->m * sizeof(overlapSet*));
+    assert(osl->os);
+    for(i=osl->l; i<osl->m; i++) osl->os[i] = NULL;
+}
+
+static void osl_push(overlapSetList *osl, overlapSet *os) {
+    if(osl->l+1 >= osl->m) osl_grow(osl);
+    osl->os[osl->l++] = os;
+}
+
+//The output needs to be destroyed
+overlapSet *osl_intersect(overlapSetList *osl) {
+    if(!osl->l) return os_init();
+
+    overlapsSet *osTmp, *os = os_dup(osl->os[0]);
+    for(i=1; i<osl->l; i++) {
+        osTmp = os_intersect(os, osl->os[i]);
+        os_destroy(os);
+        os = osTmp;
+    }
+    return os;
+}
+
+overlapSet *osl_intersectAttribute(overlapSetList *osl, char *key) {
+}
+
+overlapSet *osl_union(overlapSetList *osl) {
+}
+
+overlapSet *osl_unionAttribute(overlapSetList *osl, char *key) {
 }
 
 /*******************************************************************************
