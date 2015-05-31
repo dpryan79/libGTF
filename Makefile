@@ -52,7 +52,7 @@ check: tests/testBED tests/testGTF tests/testFindOverlaps tests/testCountOverlap
 	cd tests && ./test.sh && cd ..
 
 clean:
-	rm -f *.o *.a tests/testBED tests/testGTF tests/testFindOverlaps
+	rm -f *.o *.a tests/testBED tests/testGTF tests/testFindOverlaps tests/testCountOverlaps tests/testOverlapsAny
 
 clean-all: clean
 	make --directory=htslib clean
