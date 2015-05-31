@@ -46,7 +46,7 @@ To Do
  - [X] The GTF parsing isn't quite correct. Tag values don't need to be quoted, but that's the current default.
  - [X] Store gene_id and transcript_id along with other attributes.
  - [ ] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
- - [ ] intersect/union/diff on overlapSets
+ - [X] intersect/union/diff on overlapSets
  - [ ] compare with featureCounts/bedtools and ensure the results are the same
  - [ ] parseGFF?
  - [ ] test for GFF?
