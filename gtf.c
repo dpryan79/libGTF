@@ -22,8 +22,6 @@ GTFtree * initGTFtree() {
     t->htChroms = initHT(128);
     t->htSources = initHT(128);
     t->htFeatures = initHT(128);
-//    t->htGenes = initHT(128);
-//    t->htTranscripts = initHT(128);
     t->htAttributes = initHT(128);
 
     return t;
@@ -87,7 +85,6 @@ void addChrom(GTFtree *t) {
 }
 
 void addGTFentry(GTFtree *t, GTFline *l) {
-//    int32_t IDchrom, IDgene, IDtranscript, IDfeature, IDsource;
     int32_t IDchrom, IDfeature, IDsource;
     assert(t->balanced==0); //Should just switch to insertGTFentry(), which remains to be written
 
@@ -104,20 +101,6 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     } else {
         IDsource = str2valHT(t->htSources, l->source.s);
     }
-/*
-    //gene
-    if(!strExistsHT(t->htGenes, l->gene.s)) {
-        IDgene = addHTelement(t->htGenes, l->gene.s);
-    } else {
-        IDgene = str2valHT(t->htGenes, l->gene.s);
-    }
-    //transcript
-    if(!strExistsHT(t->htTranscripts, l->transcript.s)) {
-        IDtranscript = addHTelement(t->htTranscripts, l->transcript.s);
-    } else {
-        IDtranscript = str2valHT(t->htTranscripts, l->transcript.s);
-    }
-*/
     //feature
     if(!strExistsHT(t->htFeatures, l->feature.s)) {
         IDfeature = addHTelement(t->htFeatures, l->feature.s);
@@ -139,11 +122,11 @@ void addGTFentry(GTFtree *t, GTFline *l) {
     e->strand = l->strand;
     e->frame = l->frame;
     e->score = l->score;
-//    e->gene_id = IDgene;
-//    e->transcript_id = IDtranscript;
     e->nAttributes = l->nAttributes;
     e->attrib = l->attrib;
     assert(l->end > l->start);
+    l->nAttributes = 0;
+    l->attrib = NULL;
 
     if(t->chroms[IDchrom]->tree) {
         e->left = ((GTFentry*) t->chroms[IDchrom]->tree)->left;
@@ -551,19 +534,11 @@ void GTFline_reset(GTFline *l) {
 }
 
 void destroyGTFline(GTFline *l) {
-    int32_t i;
-
     if(l->chrom.s) free(l->chrom.s);
     if(l->feature.s) free(l->feature.s);
     if(l->source.s) free(l->source.s);
-//    if(l->gene.s) free(l->gene.s);
-//    if(l->transcript.s) free(l->transcript.s);
-    if(l->nAttributes) {
-        for(i=0; i<l->nAttributes; i++) {
-            free(l->attrib[i]);
-        }
-        free(l->attrib);
-    }
+    destroyAttributes(l);
+    if(l->attrib) free(l->attrib);
     free(l);
 }
 

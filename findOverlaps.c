@@ -117,8 +117,8 @@ void os_exclude(overlapSet *os, int i) {
 }
 
 static int os_sortFunc(const void *a, const void *b) {
-    GTFentry *pa = (GTFentry*) a;
-    GTFentry *pb = (GTFentry*) b;
+    GTFentry *pa = *(GTFentry**) a;
+    GTFentry *pb = *(GTFentry**) b;
 
     if(pa->start < pb->start) return -1;
     if(pb->start < pa->start) return 1;
@@ -128,7 +128,7 @@ static int os_sortFunc(const void *a, const void *b) {
 }
 
 static void os_sort(overlapSet *os) {
-    qsort((void *) os->overlaps, os->l, sizeof(GTFentry*), os_sortFunc);
+    qsort((void *) os->overlaps, os->l, sizeof(GTFentry**), os_sortFunc);
 }
 
 //Non-existant keys/values will be ignored

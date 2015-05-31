@@ -100,6 +100,11 @@ GTFtree *GTF2Tree(char *fname, FILTER_FUNC ffunc) {
             addGTFentry(o, line);
         } else {
             if(ffunc((void*) line)) addGTFentry(o, line);
+            else {
+                destroyAttributes(line);
+                if(line->attrib) free(line->attrib);
+                line->attrib = NULL;
+            }
         }
     }
 

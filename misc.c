@@ -71,6 +71,12 @@ void addAttribute(GTFline *l, GTFtree *t, char *key, char *value) {
     l->attrib[l->nAttributes-1] = a;
 }
 
+void destroyAttributes(GTFline *l) {
+    int i;
+    for(i=0; i<l->nAttributes; i++) free(l->attrib[i]);
+    l->nAttributes = 0;
+}
+
 int addGTFAttributes(GTFline *l, GTFtree *t, char *str) {
     int rc, len = strlen(str);
     int offset = 0, ovector[12];

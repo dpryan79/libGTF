@@ -209,6 +209,7 @@ char *nextField(char *str);
 //The following MUST be called before addGTFAttributes() or addAttribute()!
 int initGTFre();
 void addAttribute(GTFline *l, GTFtree *t, char *key, char *value);
+void destroyAttributes(GTFline *l);
 int addGTFAttributes(GTFline *l, GTFtree *t, char *str);
 //Call this after the above are done
 void destroyGTFre();
