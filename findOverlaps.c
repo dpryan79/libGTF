@@ -604,16 +604,14 @@ int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int stran
 * Convenience functions for alignments
 *
 *******************************************************************************/
-overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc) {
+overlapSet *findOverlapsBAM(GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc, COMPARE_FUNC cfunc) {
     int32_t i, start, end;
     uint32_t *CIGAR, op;
     char *chrom = NULL;
-    overlapSet *out = os;
+    overlapSet *out = NULL;
+    overlapSetList *osl = osl_init();
 
-    if(out) os_reset(out);
-    else out = os_init(t);
-
-    if(b->core.tid < 0 || (b->core.flag & BAM_FUNMAP)) return out;
+    if(b->core.tid < 0 || (b->core.flag & BAM_FUNMAP)) return os_init(t);
     chrom = hdr->target_name[b->core.tid];
 
     CIGAR = bam_get_cigar(b);
@@ -625,15 +623,18 @@ overlapSet *findOverlapsBAM(overlapSet *os, GTFtree *t, bam1_t *b, bam_hdr_t *hd
             end += bam_cigar_oplen(CIGAR[i]);
         } else if(bam_cigar_type(op) == 2) { //D or N
             if(end >= start) {
-                os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc);
+                osl_push(osl, findOverlaps(NULL, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc));
             }
             start = end + bam_cigar_oplen(CIGAR[i]) + 1;
             end = start-1;
         }
     }
     if(end >= start) {
-        os = findOverlaps(os, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc);
+        osl_push(osl, findOverlaps(NULL, t, chrom, start, end+1, (b->core.flag&16)?1:0, matchType, strandType, 1, ffunc));
     }
 
-    return os;
+    out = osl_intersect(osl, cfunc);
+    osl_destroy(osl);
+
+    return out;
 }
