@@ -128,6 +128,10 @@ typedef struct {
 typedef int (*FILTER_FUNC)(void*);
 typedef int (*FILTER_ENTRY_FUNC)(GTFtree *, GTFentry *);
 
+//A function used to compare to GTFentry items to see if the intersect in some
+//way (e.g., due to sharing a gene_id). This is used to intersect overlapsets.
+typedef int (*COMPARE_FUNC)(GTFentry *, GTFentry *);
+
 //gtf.c
 GTFtree * initGTFtree();
 void destroyGTFtree(GTFtree *t);
@@ -150,6 +154,10 @@ void GTFEntry2BED(kstring_t *ks, GTFtree *t, GTFentry *e, int ncols);
 GTFtree *GTF2Tree(char *fname, FILTER_FUNC f);
 void GTFEntry2GTF(kstring_t *ks, GTFtree *t, GTFentry *e);
 
+//parseRMSK
+//This is actually the format output by the UCSC table browser
+GTFtree *RMSK2Tree(char *fname, FILTER_FUNC f);
+
 //hashTable.c
 hashTable *initHT(uint64_t size);
 void destroyHTelement(hashTableElement *e);
@@ -163,6 +171,7 @@ int hasAttribute(GTFtree *t, GTFentry *e, char *str);
 char *getAttribute(GTFtree *t, GTFentry *e, char *str); //NULL if the attribute isn't there
 
 //findOverlaps.c
+//overlapSet functions
 overlapSet *os_init(GTFtree *t);
 void os_reset(overlapSet *os);
 void os_destroy(overlapSet *os);
@@ -171,8 +180,19 @@ void os_exclude(overlapSet *os, int i);
 void os_requireAttributes(overlapSet *os, char **keys, char **vals, int len);
 void os_requireSource(overlapSet *os, char *val);
 void os_requireFeature(overlapSet *os, char *val);
+overlapSet *os_intersect(overlapSet *os1, overlapSet *os2, COMPARE_FUNC f);
+//overlapSetList functions
+overlapSetList *osl_init();
+void osl_reset(overlapSetList *osl);
+void osl_destroy(overlapSetList *osl);
+void osl_push(overlapSetList *osl, overlapSet *os);
+void osl_grow(overlapSetList *osl);
+overlapSet *osl_intersect(overlapSetList *osl, COMPARE_FUNC f);
+overlapSet *osl_union(overlapSetList *osl);
+//uniqueSet functions
 void us_destroy(uniqueSet *us);
 char *us_val(uniqueSet *us, int32_t i);
+//Driver functions
 overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc);
 int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
 int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);

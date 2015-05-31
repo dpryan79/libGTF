@@ -10,8 +10,8 @@ OPTS = -Wall -g
 
 all: lib
 
-OBJS = murmur3.o hashTable.o gtf.o findOverlaps.o misc.o parseBED.o parseGTF.o
-VERSION = 0.0.0
+OBJS = murmur3.o hashTable.o gtf.o findOverlaps.o misc.o parseBED.o parseGTF.o parseRMSK.o
+VERSION = 0.1.0
 
 #If we're building from a git repo, then append the most recent tag
 ifneq "$(wildcard .git)" ""

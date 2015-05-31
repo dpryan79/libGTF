@@ -105,7 +105,7 @@ static void os_push(overlapSet *os, GTFentry *e) {
 
 overlapSet *os_dup(overlapSet *os) {
     int i;
-    overlapSet *os2 = os_init();
+    overlapSet *os2 = os_init(os->tree);
     for(i=0; i<os->l; i++) os_push(os2, os->overlaps[i]);
     return os2;
 }
@@ -161,6 +161,24 @@ void os_requireAttributes(overlapSet *os, char **key, char **val, int len) {
     }
 }
 
+//This is an inefficient implementation. It would be faster to sort according
+//to COMPARE_FUNC and then do an O(n) merge.
+overlapSet *os_intersect(overlapSet *os1, overlapSet *os2, COMPARE_FUNC f) {
+    overlapSet *os = os_init(os1->tree);
+    int i, j;
+
+    for(i=0; i<os1->l; i++) {
+        for(j=0; j<os2->l; j++) {
+            if(f(os1->overlaps[i],os2->overlaps[j]) == 0) {
+                os_push(os, os1->overlaps[i]);
+                os_exclude(os2, j);
+                break;
+            }
+        }
+    }
+
+    return os;
+}
 /*******************************************************************************
 *
 * OverlapSetList functions
@@ -193,31 +211,49 @@ void osl_grow(overlapSetList *osl) {
     for(i=osl->l; i<osl->m; i++) osl->os[i] = NULL;
 }
 
-static void osl_push(overlapSetList *osl, overlapSet *os) {
+void osl_push(overlapSetList *osl, overlapSet *os) {
     if(osl->l+1 >= osl->m) osl_grow(osl);
     osl->os[osl->l++] = os;
 }
 
 //The output needs to be destroyed
-overlapSet *osl_intersect(overlapSetList *osl) {
-    if(!osl->l) return os_init();
+overlapSet *osl_intersect(overlapSetList *osl, COMPARE_FUNC f) {
+    int i;
+    if(!osl->l) return NULL;
 
-    overlapsSet *osTmp, *os = os_dup(osl->os[0]);
+    overlapSet *osTmp, *os = os_dup(osl->os[0]);
     for(i=1; i<osl->l; i++) {
-        osTmp = os_intersect(os, osl->os[i]);
+        osTmp = os_intersect(os, osl->os[i], f);
         os_destroy(os);
         os = osTmp;
+        if(os->l == 0) break;
     }
     return os;
 }
 
-overlapSet *osl_intersectAttribute(overlapSetList *osl, char *key) {
+//Returns 1 if the node is in the overlapSet, otherwise 0.
+int os_contains(overlapSet *os, GTFentry *e) {
+    int i;
+    for(i=0; i<os->l; i++) {
+        if(os->overlaps[i] == e) return 1;
+    }
+    return 0;
 }
 
+//This could be made much more efficient
 overlapSet *osl_union(overlapSetList *osl) {
-}
+    int i, j;
+    if(!osl->l) NULL;
 
-overlapSet *osl_unionAttribute(overlapSetList *osl, char *key) {
+    overlapSet *os = os_dup(osl->os[0]);
+    for(i=1; i<osl->l; i++) {
+        for(j=0; j<osl->os[i]->l; j++) {
+            if(!os_contains(os, osl->os[i]->overlaps[j])) {
+                os_push(os, osl->os[i]->overlaps[j]);
+            }
+        }
+    }
+    return os;
 }
 
 /*******************************************************************************
