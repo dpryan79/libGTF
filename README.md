@@ -50,4 +50,4 @@ To Do
  - [ ] compare with featureCounts/bedtools and ensure the results are the same
  - [ ] parseGFF?
  - [ ] test for GFF?
- - [ ] Run valgrind with all tests to ensure no memory leaks
+ - [X] Run valgrind with all tests to ensure no memory leaks
