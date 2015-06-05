@@ -604,7 +604,7 @@ int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int stran
 * Convenience functions for alignments
 *
 *******************************************************************************/
-overlapSet *findOverlapsBAM(GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc, COMPARE_FUNC cfunc) {
+overlapSet *findOverlapsBAM(GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc, COMPARE_FUNC cfunc) {
     int32_t i, start, end;
     uint32_t *CIGAR, op;
     char *chrom = NULL;

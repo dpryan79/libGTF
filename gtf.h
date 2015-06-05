@@ -196,7 +196,7 @@ char *us_val(uniqueSet *us, int32_t i);
 overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc);
 int32_t countOverlaps(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
 int overlapsAny(GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc);
-overlapSet *findOverlapsBAM(GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int strand, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc, COMPARE_FUNC cfunc);
+overlapSet *findOverlapsBAM(GTFtree *t, bam1_t *b, bam_hdr_t *hdr, int matchType, int strandType, FILTER_ENTRY_FUNC ffunc, COMPARE_FUNC cfunc);
 int32_t cntGeneIDs(overlapSet *os);
 int32_t cntTranscriptIDs(overlapSet *os);
 int32_t cntAttributes(overlapSet *os, char *attributeName); //N.B., if a record lacks an attribute, it's ignored
