@@ -118,7 +118,8 @@ typedef struct {
 
 typedef struct {
     int32_t l, m;
-    int32_t *IDs, *cnts;
+    int32_t *IDs;
+    uint32_t *cnts;
     hashTable *ht;
 } uniqueSet;
 

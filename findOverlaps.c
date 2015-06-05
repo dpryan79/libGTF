@@ -283,7 +283,7 @@ static uniqueSet *us_grow(uniqueSet *us) {
     kroundup32(us->m);
     us->IDs = realloc(us->IDs, us->m * sizeof(int32_t));
     assert(us->IDs);
-    us->cnts = realloc(us->cnts, us->m * sizeof(int32_t));
+    us->cnts = realloc(us->cnts, us->m * sizeof(uint32_t));
     assert(us->cnts);
     for(i=us->l; i<us->m; i++) {
         us->IDs[i] = -1;
@@ -303,7 +303,7 @@ static void us_inc(uniqueSet *us) {
     us->cnts[us->l]++;
 }
 
-int32_t us_cnt(uniqueSet *us, int32_t i) {
+uint32_t us_cnt(uniqueSet *us, int32_t i) {
     assert(i<us->l);
     return us->cnts[i];
 }
