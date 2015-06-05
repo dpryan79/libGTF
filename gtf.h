@@ -118,7 +118,7 @@ typedef struct {
 
 typedef struct {
     int32_t l, m;
-    int32_t *IDs;
+    int32_t *IDs, *cnts;
     hashTable *ht;
 } uniqueSet;
 
@@ -191,6 +191,7 @@ overlapSet *osl_intersect(overlapSetList *osl, COMPARE_FUNC f);
 overlapSet *osl_union(overlapSetList *osl);
 //uniqueSet functions
 void us_destroy(uniqueSet *us);
+int32_t us_cnt(uniqueSet *us, int32_t i);
 char *us_val(uniqueSet *us, int32_t i);
 //Driver functions
 overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc);

@@ -270,7 +270,10 @@ static uniqueSet *us_init(hashTable *ht) {
 
 void us_destroy(uniqueSet *us) {
     if(!us) return;
-    if(us->IDs) free(us->IDs);
+    if(us->IDs) {
+        free(us->IDs);
+        free(us->cnts);
+    }
     free(us);
 }
 
@@ -280,14 +283,29 @@ static uniqueSet *us_grow(uniqueSet *us) {
     kroundup32(us->m);
     us->IDs = realloc(us->IDs, us->m * sizeof(int32_t));
     assert(us->IDs);
-    for(i=us->l; i<us->m; i++) us->IDs[i] = -1;
+    us->cnts = realloc(us->cnts, us->m * sizeof(int32_t));
+    assert(us->cnts);
+    for(i=us->l; i<us->m; i++) {
+        us->IDs[i] = -1;
+        us->cnts[i] = 0;
+    }
 
     return us;
 }
 
 static void us_push(uniqueSet *us, int32_t ID) {
     if(us->l+1 >= us->m) us = us_grow(us);
-    us->IDs[us->l++] = ID;
+    us->IDs[us->l] = ID;
+    us->cnts[us->l++] = 1;
+}
+
+static void us_inc(uniqueSet *us) {
+    us->cnts[us->l]++;
+}
+
+int32_t us_cnt(uniqueSet *us, int32_t i) {
+    assert(i<us->l);
+    return us->cnts[i];
 }
 
 char *us_val(uniqueSet *us, int32_t i) {
@@ -357,6 +375,8 @@ uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
         if(IDs[i] != last) {
             us_push(us, IDs[i]);
             last = IDs[i];
+        } else {
+            us_inc(us);
         }
     }
 
