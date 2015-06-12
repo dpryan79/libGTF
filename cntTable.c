@@ -15,6 +15,12 @@ cntTable *initCntTable(uint64_t size) {
     return ct;
 }
 
+void destroyCntTable(cntTable *ct) {
+    free(ct->cnts);
+    destroyHT(ct->ht);
+    free(ct);
+}
+
 void initCnts(cntTable *ct) {
     ct->cnts = calloc(ct->ht->l, sizeof(uint32_t));
     assert(ct->cnts);

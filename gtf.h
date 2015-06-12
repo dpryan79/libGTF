@@ -176,6 +176,7 @@ char *getAttribute(GTFtree *t, GTFentry *e, char *str); //NULL if the attribute 
 
 //cntTable.c
 cntTable *initCntTable(uint64_t size);
+void destroyCntTable(cntTable *ct);
 void initCnts(cntTable *ct);
 uint32_t str2cnt(cntTable *ct, char *s);
 void incCntTable(cntTable *ct, char *s);
