@@ -165,21 +165,6 @@ void GTFEntry2GTF(kstring_t *ks, GTFtree *t, GTFentry *e) {
     assert(kputc('\t', ks));
 
     //Attributes
-/*
-    if(e->gene_id) {
-        first = 0;
-        assert(kputs("gene_id \"", ks));
-        assert(kputs(val2strHT(t->htGenes, e->gene_id), ks));
-        assert(kputs("\"", ks));
-    }
-    if(e->transcript_id) {
-        if(!first) kputs("; ", ks);
-        first = 0;
-        assert(kputs("transcript_id \"", ks));
-        assert(kputs(val2strHT(t->htTranscripts, e->transcript_id), ks));
-        assert(kputs("\"", ks));
-    }
-*/
     for(i=0; i<e->nAttributes; i++) {
         if(!first) kputs("; ", ks);
         first = 0;

@@ -94,13 +94,16 @@ typedef struct {
 } hashTable;
 
 typedef struct {
+    hashTable *ht;
+    uint32_t *cnts;
+} cntTable;
+
+typedef struct {
     int32_t n_targets, m;
     int balanced;
     hashTable *htChroms;
     hashTable *htSources;
     hashTable *htFeatures;
-    hashTable *htGenes;
-    hashTable *htTranscripts;
     hashTable *htAttributes;
     GTFchrom **chroms;
 } GTFtree;
@@ -171,6 +174,12 @@ char *val2strHT(hashTable *ht, int32_t val);
 int hasAttribute(GTFtree *t, GTFentry *e, char *str);
 char *getAttribute(GTFtree *t, GTFentry *e, char *str); //NULL if the attribute isn't there
 
+//cntTable.c
+cntTable *initCntTable(uint64_t size);
+void initCnts(cntTable *ct);
+uint32_t str2cnt(cntTable *ct, char *s);
+void incCntTable(cntTable *ct, char *s);
+
 //findOverlaps.c
 //overlapSet functions
 overlapSet *os_init(GTFtree *t);
@@ -192,7 +201,7 @@ overlapSet *osl_intersect(overlapSetList *osl, COMPARE_FUNC f);
 overlapSet *osl_union(overlapSetList *osl);
 //uniqueSet functions
 void us_destroy(uniqueSet *us);
-int32_t us_cnt(uniqueSet *us, int32_t i);
+uint32_t us_cnt(uniqueSet *us, int32_t i);
 char *us_val(uniqueSet *us, int32_t i);
 //Driver functions
 overlapSet * findOverlaps(overlapSet *os, GTFtree *t, char *chrom, uint32_t start, uint32_t end, int strand, int matchType, int strandType, int keepOS, FILTER_ENTRY_FUNC ffunc);
