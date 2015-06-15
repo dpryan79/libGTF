@@ -41,25 +41,27 @@ uint32_t str2cnt(cntTable *ct, char *s) {
 void incCntTable(cntTable *ct, char *s) {
     assert(strExistsHT(ct->ht, s));
     int32_t val = str2valHT(ct->ht, s);
+    assert(val >= 0);
     ct->cnts[val]++;
 }
 
-void nodes2cnt(cntTable *ct, GTFnode *n, hashTable *ht, int32_t val) {
+void nodes2cnt(cntTable *ct, GTFnode *n, hashTable *ht, int32_t key) {
     int i;
     GTFentry *e = n->starts;
-    char *str = val2strHT(ht, val);
 
     while(e) {
         for(i=0; i<e->nAttributes; i++) {
-            if(e->attrib[i]->val == val) {
-                if(!strExistsHT(ct->ht, str)) addHTelement(ct->ht, str); //ignore the return value
+            if(e->attrib[i]->key == key) {
+                if(!strExistsHT(ct->ht, val2strHT(ht, e->attrib[i]->val))) {
+                    addHTelement(ct->ht, val2strHT(ht, e->attrib[i]->val)); //ignore the return value
+                }
                 break;
             }
         }
         e = e->right;
     }
-    if(n->right) nodes2cnt(ct, n->right, ht, val);
-    if(n->left) nodes2cnt(ct, n->left, ht, val);
+    if(n->right) nodes2cnt(ct, n->right, ht, key);
+    if(n->left) nodes2cnt(ct, n->left, ht, key);
 }
 
 //Hmm, in hindsight, perhaps the hashTable structure should have held key:value pairs...

@@ -14,10 +14,11 @@ KSTREAM_INIT(gzFile, gzread, 16384)
 GTFline * parseRMSKline(GTFline *o, GTFtree *t, kstring_t ks) {
     char *p, *end;
 
-    GTFline_reset(o);
+    if(o) GTFline_reset(o);
+    else o = initGTFline();
 
     //bin
-    p = nextField(NULL);
+    p = nextField(ks.s);
     if(!p) return o;
 
     //Score
@@ -42,7 +43,7 @@ GTFline * parseRMSKline(GTFline *o, GTFtree *t, kstring_t ks) {
     if(!p) return o;
 
     //Chromosome
-    p = nextField(ks.s);
+    p = nextField(NULL);
     assert(kputs(p, &o->chrom));
 
     //Start

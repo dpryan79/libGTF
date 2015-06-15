@@ -245,6 +245,8 @@ overlapSet *osl_union(overlapSetList *osl) {
     int i, j;
     if(!osl->l) NULL;
 
+    if(!osl->os) return NULL;
+    if(!osl->os[0]) return NULL;
     overlapSet *os = os_dup(osl->os[0]);
     for(i=1; i<osl->l; i++) {
         for(j=0; j<osl->os[i]->l; j++) {
@@ -300,7 +302,8 @@ static void us_push(uniqueSet *us, int32_t ID) {
 }
 
 static void us_inc(uniqueSet *us) {
-    us->cnts[us->l]++;
+    assert(us->l<=us->m);
+    us->cnts[us->l-1]++;
 }
 
 uint32_t us_cnt(uniqueSet *us, int32_t i) {
@@ -352,6 +355,7 @@ int32_t cntAttributes(overlapSet *os, char *attributeName) {
 }
 
 uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
+    if(!os) return NULL;
     if(os->l == 0) return NULL;
     int32_t IDs[os->l], i, j, key, last;
     if(!strExistsHT(os->tree->htAttributes, attributeName)) return NULL;
@@ -369,10 +373,9 @@ uniqueSet *uniqueAttributes(overlapSet *os, char *attributeName) {
     }
     qsort((void*) IDs, os->l, sizeof(int32_t), int32_t_cmp);
 
-    last = IDs[0];
-    if(IDs[0] >= 0) us_push(us, last);
-    for(i=1; i<os->l; i++) {
-        if(IDs[i] != last) {
+    last = -1;
+    for(i=0; i<os->l; i++) {
+        if(IDs[i] != last || last < 0) {
             us_push(us, IDs[i]);
             last = IDs[i];
         } else {

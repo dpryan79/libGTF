@@ -36,6 +36,9 @@ lib: htslib libGTF.a
 tests/testBED: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testBED tests/testBED.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
 
+tests/testRMSK: lib
+	$(CC) $(OPTS) -Ihtslib -o tests/testRMSK tests/testRMSK.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
+
 tests/testGTF: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testGTF tests/testGTF.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
 
@@ -48,7 +51,7 @@ tests/testCountOverlaps: lib
 tests/testOverlapsAny: lib
 	$(CC) $(OPTS) -Ihtslib -o tests/testOverlapsAny tests/testOverlapsAny.c libGTF.a htslib/libhts.a -lz -lpthread -lpcre -lm
 
-check: tests/testBED tests/testGTF tests/testFindOverlaps tests/testCountOverlaps tests/testOverlapsAny
+check: tests/testBED tests/testGTF tests/testRMSK tests/testFindOverlaps tests/testCountOverlaps tests/testOverlapsAny
 	cd tests && ./test.sh && cd ..
 
 clean:

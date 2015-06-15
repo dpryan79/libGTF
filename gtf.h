@@ -175,6 +175,7 @@ int hasAttribute(GTFtree *t, GTFentry *e, char *str);
 char *getAttribute(GTFtree *t, GTFentry *e, char *str); //NULL if the attribute isn't there
 
 //cntTable.c
+cntTable *makeCntTable(GTFtree *t, hashTable *ht, char *name);
 cntTable *initCntTable(uint64_t size);
 void destroyCntTable(cntTable *ct);
 void initCnts(cntTable *ct);

@@ -5,6 +5,7 @@
 *.so
 tests/testBED
 tests/testGTF
+tests/testRMSK
 tests/testFindOverlaps
 tests/testCountOverlaps
 tests/testOverlapsAny
