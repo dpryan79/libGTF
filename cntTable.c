@@ -12,8 +12,8 @@ cntTable *initCntTable(uint64_t size) {
     cntTable *ct = calloc(1, sizeof(cntTable));
     assert(ct);
     ct->ht = ht;
-    ct->cnt = calloc(1, sizeof(uint32_t));
-    assert(ct->cnt);
+    ct->cnts = calloc(1, sizeof(uint32_t));
+    assert(ct->cnts);
     return ct;
 }
 
