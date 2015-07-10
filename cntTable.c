@@ -24,8 +24,10 @@ void destroyCntTable(cntTable *ct) {
 }
 
 void initCnts(cntTable *ct) {
-    ct->cnts = calloc(ct->ht->l, sizeof(uint32_t));
-    assert(ct->cnts);
+    if(ct->ht->l) {
+        ct->cnts = calloc(ct->ht->l, sizeof(uint32_t));
+        assert(ct->cnts);
+    }
 }
 
 //There's no way to distinguish between "doesn't exist" and "has no counts"!
