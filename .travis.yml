@@ -1,8 +1,11 @@
-sudo: false
 language: c
-os:
+os: 
   - linux
   - osx
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update; brew install pcre; fi
+sudo:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then true; else false; fi
 script: make && make check
 compiler:
   - clang

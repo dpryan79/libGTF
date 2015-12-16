@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dpryan79/libGTF.svg?branch=master)](https://travis-ci.org/dpryan79/libGTF)
+
 libGTF a library for parsing/searching GTF and BED files
 ========================================================
 
@@ -30,24 +32,4 @@ There are currently a few example programs in the `tests/` directory.
 To Do
 =====
 
- - [X] cntGeneIDs()
- - [X] uniqueGeneIDs()
- - [X] cntTranscriptIDs()
- - [X] uniqueTranscriptIDs()
- - [X] cntAttributes()
- - [X] uniqueAttributes()
- - [X] test various overlap options
-   - [X] findOverlaps
-   - [X] countOverlaps
-   - [X] overlapsAny
-   - [X] test strandedness with above
-   - [X] test match type options with above
-   - [X] The above should accept a filter function, as with GTF2Tree and BED2Tree.
- - [X] The GTF parsing isn't quite correct. Tag values don't need to be quoted, but that's the current default.
- - [X] Store gene_id and transcript_id along with other attributes.
- - [X] Spliced alignments aren't being handled correctly. Each mapped segment should be used for the search, followed by a union/intersect operation on a returned overlapSets object, which then produces an overlapSet.
- - [X] intersect/union/diff on overlapSets
  - [ ] compare with featureCounts/bedtools and ensure the results are the same
- - [ ] parseGFF?
- - [ ] test for GFF?
- - [X] Run valgrind with all tests to ensure no memory leaks
