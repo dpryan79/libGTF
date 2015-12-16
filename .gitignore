@@ -3,6 +3,7 @@
 *.o
 *.a
 *.so
+*.swp
 tests/testBED
 tests/testGTF
 tests/testRMSK
